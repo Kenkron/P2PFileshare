@@ -18,8 +18,10 @@ public class peerProcess {
 		
 		server = new Server(peerList);
 		new Thread(server).start();
-		//Question: if we do nothing else on the main thread,
-		//couldn't we just implement the server thread on the main thread
+		//attempt to connect to all of the other peers
+		//Should we pass the sockets to the Server thread to manage?
+		//handle duplicate Sockets: if A connects to B as B is connecting to A, there will be a synchronization problem
+		//how do you handle which socket to discard (it should be the same one on each peer)?
 		
 		//Question: is there user input into this program?
 		//ie: Press q to quit (or would you just have to hit the X button)?
