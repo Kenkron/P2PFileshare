@@ -6,11 +6,12 @@ import java.util.ArrayList;
 
 public class Server implements Runnable {
 	private final int thePort = 53535;
-	ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
+	ArrayList<RemotePeerInfo> peerList;
 	ArrayList<Socket> peerSockets = new ArrayList<Socket>();
 	ServerSocket serverSocket;
 	
-	public Server() {
+	public Server(ArrayList<RemotePeerInfo> peerList) {
+		this.peerList = peerList;
 		try {
 			serverSocket = new ServerSocket(thePort);
 		}
