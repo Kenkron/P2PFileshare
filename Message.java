@@ -3,13 +3,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+import java.io.ByteArrayOutputStream;
+//import com.sun.xml.internal.messaging.saaj.util.ByteArrayOutputStream;
 
 public class Message{
 
     public enum MessageType{
-	
+    	CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD, REQUEST, PIECE
     }
 
     MessageType type;
@@ -23,9 +23,9 @@ public class Message{
     }
 
     public static byte[] encode(boolean bitmap[]) throws IOException{
-    	ByteOutputStream out = new ByteOutputStream(bitmap.length/8);
+    	ByteArrayOutputStream out = new ByteArrayOutputStream(bitmap.length/8);
     	writeBooleans(out,bitmap);
-    	return out.getBytes();
+    	return out.toByteArray();
     }
     
     private static void writeBooleans(OutputStream out, boolean[] ar) throws IOException {
