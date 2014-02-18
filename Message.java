@@ -1,0 +1,47 @@
+import java.nio.ByteBuffer;
+
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+
+public class Message{
+
+    public enum MessageType{
+	
+    }
+
+    MessageType type;
+
+    int length;
+    
+    ByteBuffer data;
+
+    public Message(MessageType type){
+	this.type=type;
+    }
+
+    public static byte[] encode(boolean bitmap[]){
+    	ByteOutputStream out = new ByteOutputStream(bitmap.length/8);
+    	writeBooleans(out,bitmap);
+    	return out.getBytes();
+    }
+    
+    private static void writeBooleans(OutputStream out, boolean[] ar) throws IOException {
+        for (int i = 0; i < ar.length; i += 8) {
+            int b = 0;
+            for (int j = Math.min(i + 7, ar.length-1); j >= i; j--) {
+                b = (b << 1) | (ar[j] ? 1 : 0);
+            }
+            out.write(b);
+        }
+    }
+
+    private static void readBooleans(InputStream in, boolean[] ar) throws IOException {
+        for (int i = 0; i < ar.length; i += 8) {
+            int b = in.read();
+            if (b < 0) throw new EOFException();
+            for (int j = i; j < i + 8 && j < ar.length; j++) {
+                ar[j] = (b & 1) != 0;
+                b >>>= 1;
+            }
+        }
+    }
+}
