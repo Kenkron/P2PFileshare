@@ -7,11 +7,12 @@ import java.util.ArrayList;
 public class Server implements Runnable {
 	private final int thePort = 53535;
 	ArrayList<RemotePeerInfo> peerList;
-	ArrayList<Socket> peerSockets = new ArrayList<Socket>();
+	ArrayList<Socket> peerSocketList;
 	ServerSocket serverSocket;
 	
-	public Server(ArrayList<RemotePeerInfo> peerList) {
+	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<Socket> peerSocketList) {
 		this.peerList = peerList;
+		this.peerSocketList = peerSocketList;
 		try {
 			serverSocket = new ServerSocket(thePort);
 		}
@@ -27,7 +28,7 @@ public class Server implements Runnable {
 		while(true) {
 			try {
 				Socket s = serverSocket.accept();
-				peerSockets.add(s);
+				peerSocketList.add(s);
 			}
 			catch(IOException e) {
 				e.printStackTrace();

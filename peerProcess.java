@@ -1,9 +1,11 @@
+import java.net.Socket;
 import java.util.ArrayList;
 
 
 public class peerProcess {
 	public static int peerID;
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
+	public static ArrayList<Socket> peerSocketList = new ArrayList<Socket>();
 	public static Server server;
 	
 	public static void main(String[] args) {
@@ -16,7 +18,7 @@ public class peerProcess {
 		readCommonInfo();
 		readPeerInfo();
 		
-		server = new Server(peerList);
+		server = new Server(peerList, peerSocketList);
 		new Thread(server).start();
 		//attempt to connect to all of the other peers
 		//Should we pass the sockets to the Server thread to manage?
