@@ -9,7 +9,7 @@ import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 public class Message{
 
     public enum MessageType{
-	
+    	CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED, HAVE, BITFIELD, REQUEST, PIECE
     }
 
     MessageType type;
