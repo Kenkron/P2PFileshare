@@ -1,3 +1,7 @@
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
@@ -18,7 +22,7 @@ public class Message{
 	this.type=type;
     }
 
-    public static byte[] encode(boolean bitmap[]){
+    public static byte[] encode(boolean bitmap[]) throws IOException{
     	ByteOutputStream out = new ByteOutputStream(bitmap.length/8);
     	writeBooleans(out,bitmap);
     	return out.getBytes();
