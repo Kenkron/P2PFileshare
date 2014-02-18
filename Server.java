@@ -17,10 +17,8 @@ public class Server implements Runnable {
 			serverSocket = new ServerSocket(thePort);
 		}
 		catch(IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override
@@ -28,7 +26,9 @@ public class Server implements Runnable {
 		while(true) {
 			try {
 				Socket s = serverSocket.accept();
-				peerSocketList.add(s);
+				if(peerProcess.addSocketToList(s)) {
+					new PeerHandler(s).start();
+				}
 			}
 			catch(IOException e) {
 				e.printStackTrace();
