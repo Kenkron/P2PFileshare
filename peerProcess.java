@@ -2,6 +2,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 
 public class peerProcess {
@@ -59,12 +62,30 @@ public class peerProcess {
 	
 	//TODO: can we just copy and modify StartRemotePeers.getConfiguration() 
 	public static void readPeerInfo() {
-		//read and parse the file ./PeerInfo.cfg
-		//create a RemotePeerInfo object for each line
-		//call setHasValue() if necessary
-		//add to peerList
 		//sort peerList? ie: RemotePeerInfo implements Comparable, Collections.sort()
 		//should self be included in the peerList?
+		
+		//read and parse the file ./PeerInfo.cfg
+		try {
+			String st;
+			BufferedReader br = new BufferedReader(new FileReader("./PeerInfo.cfg"));
+			while ((st = br.readLine()) != null) {
+			    //read each column for what it is
+				String[] tokens = st.split("\\s+");
+			    RemotePeerInfo newRPI = 
+			                        new RemotePeerInfo(tokens[0], tokens[1],
+			                                           tokens[2]);
+			    //call setHasValue() if necessary
+			    if (tokens[3].equals("1"))
+			        newRPI.setHasFile(true);			    
+			    //add to peerList
+			    peerList.add(newRPI);
+			}
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+		
 	}
 	
 	/**
