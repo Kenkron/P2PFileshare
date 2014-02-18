@@ -25,7 +25,7 @@ public class Message{
     public static byte[] encode(boolean bitmap[]) throws IOException{
     	ByteArrayOutputStream out = new ByteArrayOutputStream(bitmap.length/8);
     	writeBooleans(out,bitmap);
-    	return out.getBytes();
+    	return out.toByteArray();
     }
     
     private static void writeBooleans(OutputStream out, boolean[] ar) throws IOException {
