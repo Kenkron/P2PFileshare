@@ -40,96 +40,76 @@ public class Logger {
 	public static void err(String message) {
 		System.err.println(message);
 	}
-
+	
+	public static String getFormattedDate() {
+		return dateFormat.format(new Date());
+	}
+	
+	private static void logToFile(String s) {
+		try {
+			writer = new BufferedWriter(fileWriter);
+			writer.write(s);
+			writer.close();
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static String connectedToString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " makes a connection to Peer " + otherPeerID + ".\n";
+	}
 	public static void connectedTo(int otherPeerID) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " makes a connection to Peer " + otherPeerID + ".\n");
-			writer.close();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		logToFile(connectedToString(otherPeerID));
 	}
 	
+	private static String connectedFromString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " is connected from Peer " + otherPeerID + ".\n";
+	}
 	public static void connectedFrom(int otherPeerID) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " is connected from Peer " + otherPeerID + ".\n");
-			writer.close();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		logToFile(connectedFromString(otherPeerID));
 	}
 	
-	public static void changedPreferredNeighbors(ArrayList<Integer> neighborIDs) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " has the preferred neighbors ");
-			for(int i = 0;i<neighborIDs.size();i++) {
-				writer.write(neighborIDs.get(i));
-				if(i < neighborIDs.size() - 1) {
-					writer.write(", ");
-				}
+	private static String changedPreferredNeighborsString(ArrayList<Integer> neighborIDs) {
+		String s = getFormattedDate() + ": Peer " + peerID + " has the preferred neighbors ";
+		for(int i = 0;i<neighborIDs.size();i++) {
+			s += neighborIDs.get(i);
+			if(i < neighborIDs.size() - 1) {
+				s += ", ";
 			}
-			writer.write(".\n");
-			writer.close();
 		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		s += ".\n";
+		return s;
+	}
+	public static void changedPreferredNeighbors(ArrayList<Integer> neighborIDs) {
+		logToFile(changedPreferredNeighborsString(neighborIDs));
 	}
 	
+	public static String changedOptimisticallyUnchokedNeighborString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " has optimistically-unchoked neighbor " + otherPeerID + ".\n";
+	}
 	public static void changedOptimisticallyUnchokedNeighbor(int otherPeerID) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " has optimistically-unchoked neighbor " + otherPeerID + ".\n");
-			writer.close();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		logToFile(changedOptimisticallyUnchokedNeighborString(otherPeerID));
 	}
 	
+	public static String chokedByString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " is choked by " + otherPeerID + ".\n";
+	}
 	public static void chokedBy(int otherPeerID) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " is choked by " + otherPeerID + ".\n");
-			writer.close();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		logToFile(chokedByString(otherPeerID));
 	}
 	
+	public static String unchokedByString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " is unchoked by " + otherPeerID + ".\n";
+	}
 	public static void unchokedBy(int otherPeerID) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " is unchoked by " + otherPeerID + ".\n");
-			writer.close();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		logToFile(unchokedByString(otherPeerID));
 	}
 	
-	public static void receivedHave(int otherPeerID, int pieceIndex) {
-		Date now = new Date();
-		try {
-			writer = new BufferedWriter(fileWriter);
-			writer.write(dateFormat.format(now) + ": Peer " + peerID + " received a 'have' message from " + otherPeerID + " for the piece " + pieceIndex + ".\n");
-			writer.close();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+	public static String receivedHaveString(int otherPeerID, int pieceIndex) {
+		return getFormattedDate() + ": Peer " + peerID + " received a 'have' message from " + otherPeerID + " for the piece " + pieceIndex + ".\n";
 	}
-
+	public static void receivedHave(int otherPeerID, int pieceIndex) {
+		logToFile(receivedHaveString(otherPeerID, pieceIndex));
+	}
 }

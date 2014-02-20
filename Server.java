@@ -28,6 +28,16 @@ public class Server implements Runnable {
 				Socket s = serverSocket.accept();
 				if(peerProcess.addSocketToList(s)) {
 					new PeerHandler(s).start();
+					//Attempt to get the peerID from the hostname of the associated socket
+					//I'm not sure if this will work.
+					//Question: do we log the connection when the sockets are set up or after the handshake messages?
+					String otherPeerID = null;
+					for(RemotePeerInfo rpi : peerList) {
+						if(rpi.peerAddress.equals(s.getInetAddress().getCanonicalHostName())) {
+							otherPeerID = rpi.peerId;
+						}
+					}
+					Logger.connectedFrom(Integer.valueOf(otherPeerID));
 				}
 			}
 			catch(IOException e) {

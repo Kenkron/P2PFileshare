@@ -36,6 +36,8 @@ public class peerProcess {
 			System.exit(0);
 		}
 		peerID = Integer.valueOf(args[0]);
+		Logger.setupLogger(peerID);
+		Logger.connectedTo(123);
 		
 		//read the CommonInfo file
 		try{
@@ -56,14 +58,11 @@ public class peerProcess {
 		new Thread(server).start();
 		for(RemotePeerInfo rpi : peerList) {
 			try {
-				Socket s = new Socket(rpi.peerAddress, new Integer(rpi.peerPort));
+				Socket s = new Socket(rpi.peerAddress, Integer.valueOf(rpi.peerPort));
 				if(addSocketToList(s)) {
 					new PeerHandler(s).start();
+					Logger.connectedTo(Integer.valueOf(rpi.peerId));
 				}
-			}
-			catch(NumberFormatException e) {
-				//if the port passed in isn't an integer
-				e.printStackTrace();
 			}
 			catch(UnknownHostException e) {
 				//Host not Found (peer hasn't been started yet)
@@ -75,7 +74,8 @@ public class peerProcess {
 			}
 		}
 
-		//Implement ChokeHandler here (not as a separate thread)
+		
+		Logger.closeLogger();
 	}
 	
 	/**read and parse the file ./Common.cfg
@@ -150,7 +150,7 @@ public class peerProcess {
 	
 	/**
 	 * Add socket <i>s</i> to peerSocketList if it doesn't currently exist.
-	 * @return true if added to peerSocketList, otherwise return false
+	 * @return <code>true</code> if added to <code>peerSocketList</code>, otherwise return <code>false</code>
 	 */
 	public static synchronized boolean addSocketToList(Socket s) {
 		boolean exists = false;
