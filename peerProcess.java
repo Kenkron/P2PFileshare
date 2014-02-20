@@ -54,25 +54,7 @@ public class peerProcess {
 		
 		readPeerInfo();
 		
-		server = new Server(peerList, peerSocketList);
-		new Thread(server).start();
-		for(RemotePeerInfo rpi : peerList) {
-			try {
-				Socket s = new Socket(rpi.peerAddress, Integer.valueOf(rpi.peerPort));
-				if(addSocketToList(s)) {
-					new PeerHandler(s).start();
-					Logger.connectedTo(Integer.valueOf(rpi.peerId));
-				}
-			}
-			catch(UnknownHostException e) {
-				//Host not Found (peer hasn't been started yet)
-				//e.printStackTrace();
-			}
-			catch(IOException e) {
-				//can't create the socket (peer hasn't been started probably)
-				//e.printStackTrace();
-			}
-		}
+		startServerConnectToPeers();
 
 		
 		Logger.closeLogger();
@@ -146,6 +128,28 @@ public class peerProcess {
 			e.printStackTrace();
 		}	
 		
+	}
+	
+	public static void startServerConnectToPeers() {
+		server = new Server(peerList, peerSocketList);
+		new Thread(server).start();
+		for(RemotePeerInfo rpi : peerList) {
+			try {
+				Socket s = new Socket(rpi.peerAddress, Integer.valueOf(rpi.peerPort));
+				if(addSocketToList(s)) {
+					new PeerHandler(s).start();
+					Logger.connectedTo(Integer.valueOf(rpi.peerId));
+				}
+			}
+			catch(UnknownHostException e) {
+				//Host not Found (peer hasn't been started yet)
+				//e.printStackTrace();
+			}
+			catch(IOException e) {
+				//can't create the socket (peer hasn't been started probably)
+				//e.printStackTrace();
+			}
+		}
 	}
 	
 	/**
