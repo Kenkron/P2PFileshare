@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Timer;
 
 
 public class peerProcess {
@@ -61,6 +62,14 @@ public class peerProcess {
 		serverThread.join();
 
 		Logger.closeLogger();
+		
+	    //create the Timer classes for checking for better neighbors
+		Timer preferredNeighborTimer = new Timer();
+		Timer optimisticUnchokeTimer = new Timer();	
+		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()
+		                                      , 0, UnchokingInterval);
+		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
+		                                      0, OptimisticUnchokingInterval);
 	}
 	
 	/**read and parse the file ./Common.cfg
