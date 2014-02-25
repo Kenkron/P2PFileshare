@@ -15,6 +15,7 @@ public class peerProcess {
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
 	public static ArrayList<Socket> peerSocketList = new ArrayList<Socket>();
 	public static Server server;
+	public static Thread serverThread;
 	/**the preferred number of active piers given by Common.cfg. Defaults to 2.*/
 	public static int NumberOfPreferredNeightbors=2;
 	/**the delay (in milliseconds) between preferred neighbor unchoking.
@@ -30,7 +31,7 @@ public class peerProcess {
 	/**The size of the pieces sent given by Common.cfg.*/
 	public static int PieceSize=0;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		if(args.length != 1) {
 			System.out.println("Improper format. Use 'java peerProcess peerID'");
 			System.exit(0);
@@ -51,12 +52,14 @@ public class peerProcess {
 			System.exit(1);
 		}
 		
+		Logger.debug(1, "Config Files Loaded");
 		
 		readPeerInfo();
 		
 		startServerConnectToPeers();
 
-		
+		serverThread.join();
+
 		Logger.closeLogger();
 	}
 	
@@ -123,16 +126,16 @@ public class peerProcess {
 			    //add to peerList
 			    peerList.add(newRPI);
 			}
- 
+			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
-		
 	}
 	
 	public static void startServerConnectToPeers() {
 		server = new Server(peerList, peerSocketList);
-		new Thread(server).start();
+		serverThread=new Thread(server);
+		serverThread.start();
 		for(RemotePeerInfo rpi : peerList) {
 			try {
 				Socket s = new Socket(rpi.peerAddress, Integer.valueOf(rpi.peerPort));
@@ -150,6 +153,7 @@ public class peerProcess {
 				//e.printStackTrace();
 			}
 		}
+		Logger.debug(1, "Initial Peers Found: "+peerSocketList.size());
 	}
 	
 	/**

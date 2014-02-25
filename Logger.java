@@ -9,7 +9,9 @@ public class Logger {
 	private static FileWriter fileWriter;
 	private static BufferedWriter writer;
 	private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-
+	/**The Level of Detail to provide while debugging*/
+	public static int debugLevel=2;
+	
 	public static void setupLogger(int newPeerID) {
 		peerID = newPeerID;
 		try {
@@ -111,5 +113,13 @@ public class Logger {
 	}
 	public static void receivedHave(int otherPeerID, int pieceIndex) {
 		logToFile(receivedHaveString(otherPeerID, pieceIndex));
+	}
+	
+	/**Shows a debugging method.  Level indicates the detail provided in this message.
+	 * The lower the number, the more important the message is deemed*/
+	public static void debug(int level, String s){
+		if (level<=debugLevel){
+			System.out.println(s);
+		}
 	}
 }

@@ -38,6 +38,7 @@ public class Server implements Runnable {
 						}
 					}
 					Logger.connectedFrom(Integer.valueOf(otherPeerID));
+					Logger.debug(2,"Server Connected From "+otherPeerID);
 				}
 			}
 			catch(IOException e) {
