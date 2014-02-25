@@ -1,11 +1,10 @@
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
 public class PeerHandler {
-	private Socket socket = null;
+	public Socket socket = null;
 	private OutputStream oos = null;
 	private InputHandler ih = null;
 
@@ -18,6 +17,10 @@ public class PeerHandler {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void sendHandshake() {
+		
 	}
 
 	/**

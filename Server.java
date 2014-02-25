@@ -7,13 +7,13 @@ import java.util.ArrayList;
 public class Server implements Runnable {
 	private int thePort;
 	ArrayList<RemotePeerInfo> peerList;
-	ArrayList<Socket> peerSocketList;
+	ArrayList<PeerHandler> peerHandlerList;
 	ServerSocket serverSocket;
 	
-	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<Socket> peerSocketList, int portNum) {
+	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<PeerHandler> peerHandlerList, int portNum) {
 		this.peerList = peerList;
 		this.thePort = portNum;
-		this.peerSocketList = peerSocketList;
+		this.peerHandlerList = peerHandlerList;
 		try {
 			serverSocket = new ServerSocket(thePort);
 		}
@@ -27,8 +27,9 @@ public class Server implements Runnable {
 		while(true) {
 			try {
 				Socket s = serverSocket.accept();
-				if(peerProcess.addSocketToList(s)) {
-					new PeerHandler(s).start();
+				PeerHandler ph = new PeerHandler(s);
+				if(peerProcess.addPeerHandlerToList(ph)) {
+					ph.start();
 					//Attempt to get the peerID from the hostname of the associated socket
 					//I'm not sure if this will work.
 					//Question: do we log the connection when the sockets are set up or after the handshake messages?

@@ -14,7 +14,7 @@ public class peerProcess {
 	public static int peerID;
 	public static int myPeerPort;
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
-	public static ArrayList<Socket> peerSocketList = new ArrayList<Socket>();
+	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
 	public static Server server;
 	public static Thread serverThread;
 	/**the preferred number of active piers given by Common.cfg. Defaults to 2.*/
@@ -139,40 +139,42 @@ public class peerProcess {
 	}
 	
 	public static void startServerConnectToPeers() {
-		server = new Server(peerList, peerSocketList, myPeerPort);
+		server = new Server(peerList, peerHandlerList, myPeerPort);
 		serverThread=new Thread(server);
 		serverThread.start();
 		for(RemotePeerInfo rpi : peerList) {
 			try {
 				Socket s = new Socket(rpi.peerAddress, Integer.valueOf(rpi.peerPort));
-				if(addSocketToList(s)) {
-					new PeerHandler(s).start();
+				PeerHandler ph = new PeerHandler(s);
+				if(addPeerHandlerToList(ph)) {
+					ph.start();
 					Logger.connectedTo(Integer.valueOf(rpi.peerId));
 				}
 			}
 			catch(UnknownHostException e) {
-				//Host not Found (peer hasn't been started yet)
+				//Host not Found (peer hasn't been started yet), don't print anything
 			}
 			catch(IOException e) {
-				//can't create the socket (peer hasn't been started probably)
+				//can't create the socket (peer hasn't been started probably), don't print anything
 			}
 		}
-		Logger.debug(1, "Initial Peers Found: "+peerSocketList.size());
+		Logger.debug(1, "Initial Peers Found: "+peerHandlerList.size());
 	}
 	
 	/**
 	 * Add socket <i>s</i> to peerSocketList if it doesn't currently exist.
 	 * @return <code>true</code> if added to <code>peerSocketList</code>, otherwise return <code>false</code>
 	 */
-	public static synchronized boolean addSocketToList(Socket s) {
+	public static synchronized boolean addPeerHandlerToList(PeerHandler ph) {
 		boolean exists = false;
-		for(Socket currentSocket : peerSocketList) {
-			if(s.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
+		for(PeerHandler currentPeer : peerHandlerList) {
+			Socket currentSocket = currentPeer.socket;
+			if(ph.socket.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
 				exists = true;
 			}
 		}
 		if(!exists) {
-			peerSocketList.add(s);
+			peerHandlerList.add(ph);
 		}
 		return !exists;
 	}
