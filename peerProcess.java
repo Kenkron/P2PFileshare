@@ -8,15 +8,19 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Timer;
 
 
 public class peerProcess {
 	public static int peerID;
 	public static int myPeerPort;
+	
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
 	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
+	
 	public static Server server;
 	public static Thread serverThread;
+	
 	/**the preferred number of active piers given by Common.cfg. Defaults to 2.*/
 	public static int NumberOfPreferredNeightbors=2;
 	/**the delay (in milliseconds) between preferred neighbor unchoking.
@@ -61,6 +65,14 @@ public class peerProcess {
 		serverThread.join();
 
 		Logger.closeLogger();
+		
+	    //create the Timer classes for checking for better neighbors
+		Timer preferredNeighborTimer = new Timer();
+		Timer optimisticUnchokeTimer = new Timer();	
+		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()
+		                                      , 0, UnchokingInterval);
+		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
+		                                      0, OptimisticUnchokingInterval);
 	}
 	
 	/**read and parse the file ./Common.cfg
@@ -180,3 +192,4 @@ public class peerProcess {
 	}
 
 }
+
