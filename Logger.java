@@ -87,28 +87,28 @@ public class Logger {
 		logToFile(changedPreferredNeighborsString(neighborIDs));
 	}
 	
-	public static String changedOptimisticallyUnchokedNeighborString(int otherPeerID) {
+	private static String changedOptimisticallyUnchokedNeighborString(int otherPeerID) {
 		return getFormattedDate() + ": Peer " + peerID + " has optimistically-unchoked neighbor " + otherPeerID + ".\n";
 	}
 	public static void changedOptimisticallyUnchokedNeighbor(int otherPeerID) {
 		logToFile(changedOptimisticallyUnchokedNeighborString(otherPeerID));
 	}
 	
-	public static String chokedByString(int otherPeerID) {
+	private static String chokedByString(int otherPeerID) {
 		return getFormattedDate() + ": Peer " + peerID + " is choked by " + otherPeerID + ".\n";
 	}
 	public static void chokedBy(int otherPeerID) {
 		logToFile(chokedByString(otherPeerID));
 	}
 	
-	public static String unchokedByString(int otherPeerID) {
+	private static String unchokedByString(int otherPeerID) {
 		return getFormattedDate() + ": Peer " + peerID + " is unchoked by " + otherPeerID + ".\n";
 	}
 	public static void unchokedBy(int otherPeerID) {
 		logToFile(unchokedByString(otherPeerID));
 	}
 	
-	public static String receivedHaveString(int otherPeerID, int pieceIndex) {
+	private static String receivedHaveString(int otherPeerID, int pieceIndex) {
 		return getFormattedDate() + ": Peer " + peerID + " received a 'have' message from " + otherPeerID + " for the piece " + pieceIndex + ".\n";
 	}
 	public static void receivedHave(int otherPeerID, int pieceIndex) {
