@@ -42,8 +42,10 @@ public class PeerHandler {
 		@Override
 		public void run() {
 			try {
-				while(true) {
-					ois.read();
+				int next=0;
+				while(next>=0) {
+					next = ois.read();
+					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" recieved "+next);
 					//TODO: HANDLE INCOMING MESSAGES
 				}
 			}

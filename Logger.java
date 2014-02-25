@@ -10,7 +10,7 @@ public class Logger {
 	private static BufferedWriter writer;
 	private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	/**The Level of Detail to provide while debugging*/
-	public static int debugLevel=2;
+	public static int debugLevel=4;
 	
 	public static void setupLogger(int newPeerID) {
 		peerID = newPeerID;
@@ -52,6 +52,7 @@ public class Logger {
 			writer = new BufferedWriter(fileWriter);
 			writer.write(s);
 			writer.close();
+			debug(3,s);
 		}
 		catch(IOException e) {
 			e.printStackTrace();
