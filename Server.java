@@ -5,14 +5,15 @@ import java.util.ArrayList;
 
 
 public class Server implements Runnable {
-	private final int thePort = 53535;
+	private int thePort;
 	ArrayList<RemotePeerInfo> peerList;
-	ArrayList<Socket> peerSocketList;
+	ArrayList<PeerHandler> peerHandlerList;
 	ServerSocket serverSocket;
 	
-	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<Socket> peerSocketList) {
+	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<PeerHandler> peerHandlerList, int portNum) {
 		this.peerList = peerList;
-		this.peerSocketList = peerSocketList;
+		this.thePort = portNum;
+		this.peerHandlerList = peerHandlerList;
 		try {
 			serverSocket = new ServerSocket(thePort);
 		}
@@ -26,10 +27,12 @@ public class Server implements Runnable {
 		while(true) {
 			try {
 				Socket s = serverSocket.accept();
-				Logger.debug(2, "Server: recieved a connection");
-				if(peerProcess.addSocketToList(s)) {
-					new PeerHandler(s).start();
-					//Attempt to get the peerID from the host name of the associated socket.
+				Logger.debug(4, "Server: recieved a connection");
+
+				PeerHandler ph = new PeerHandler(s);
+				if(peerProcess.addPeerHandlerToList(ph)) {
+					ph.start();
+					//Attempt to get the peerID from the hostname of the associated socket
 					//I'm not sure if this will work.
 					//Question: do we log the connection when the sockets are set up or after the handshake messages?
 					String otherPeerID = null;
@@ -39,9 +42,9 @@ public class Server implements Runnable {
 						}
 					}
 					Logger.connectedFrom(Integer.valueOf(otherPeerID));
-					Logger.debug(2,"Server: Connection From "+otherPeerID);
+					Logger.debug(4,"Server: Connection From "+otherPeerID);
 				} else {
-					Logger.debug(2,"Server: connection rejected");
+					Logger.debug(4,"Server: connection rejected");
 				}
 			}
 			catch(IOException e) {

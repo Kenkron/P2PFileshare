@@ -8,14 +8,19 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Timer;
 
 
 public class peerProcess {
 	public static int peerID;
+	public static int myPeerPort;
+	
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
-	public static ArrayList<Socket> peerSocketList = new ArrayList<Socket>();
+	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
+	
 	public static Server server;
 	public static Thread serverThread;
+	
 	/**the preferred number of active piers given by Common.cfg. Defaults to 2.*/
 	public static int NumberOfPreferredNeightbors=2;
 	/**the delay (in milliseconds) between preferred neighbor unchoking.
@@ -60,6 +65,14 @@ public class peerProcess {
 		serverThread.join();
 
 		Logger.closeLogger();
+		
+	    //create the Timer classes for checking for better neighbors
+		Timer preferredNeighborTimer = new Timer();
+		Timer optimisticUnchokeTimer = new Timer();	
+		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()
+		                                      , 0, UnchokingInterval);
+		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
+		                                      0, OptimisticUnchokingInterval);
 	}
 	
 	/**read and parse the file ./Common.cfg
@@ -107,7 +120,7 @@ public class peerProcess {
 	//TODO: can we just copy and modify StartRemotePeers.getConfiguration() 
 	public static void readPeerInfo() {
 		//sort peerList? ie: RemotePeerInfo implements Comparable, Collections.sort()
-		//should self be included in the peerList?
+		//peerList does not contain self
 		
 		//read and parse the file ./PeerInfo.cfg
 		try {
@@ -121,9 +134,15 @@ public class peerProcess {
 			                                           tokens[2]);
 			    //call setHasValue() if necessary
 			    if (tokens[3].equals("1"))
-			        newRPI.setHasFile(true);			    
-			    //add to peerList
-			    peerList.add(newRPI);
+			        newRPI.setHasFile(true);
+			    
+			    if(Integer.valueOf(newRPI.peerId) == peerID) {
+			    	myPeerPort = Integer.valueOf(newRPI.peerPort);
+			    }
+			    else {
+			    	//add to peerList
+			    	peerList.add(newRPI);
+			    }
 			}
 			br.close();
 		} catch (IOException e) {
@@ -132,44 +151,45 @@ public class peerProcess {
 	}
 	
 	public static void startServerConnectToPeers() {
-		server = new Server(peerList, peerSocketList);
+		server = new Server(peerList, peerHandlerList, myPeerPort);
 		serverThread=new Thread(server);
 		serverThread.start();
 		for(RemotePeerInfo rpi : peerList) {
 			try {
 				Socket s = new Socket(rpi.peerAddress, Integer.valueOf(rpi.peerPort));
-				if(addSocketToList(s)) {
-					new PeerHandler(s).start();
+				PeerHandler ph = new PeerHandler(s);
+				if(addPeerHandlerToList(ph)) {
+					ph.start();
 					Logger.connectedTo(Integer.valueOf(rpi.peerId));
 				}
 			}
 			catch(UnknownHostException e) {
-				//Host not Found (peer hasn't been started yet)
-				//e.printStackTrace();
+				//Host not Found (peer hasn't been started yet), don't print anything
 			}
 			catch(IOException e) {
-				//can't create the socket (peer hasn't been started probably)
-				//e.printStackTrace();
+				//can't create the socket (peer hasn't been started probably), don't print anything
 			}
 		}
-		Logger.debug(1, "Initial Peers Found: "+peerSocketList.size());
+		Logger.debug(1, "Initial Peers Found: "+peerHandlerList.size());
 	}
 	
 	/**
 	 * Add socket <i>s</i> to peerSocketList if it doesn't currently exist.
 	 * @return <code>true</code> if added to <code>peerSocketList</code>, otherwise return <code>false</code>
 	 */
-	public static synchronized boolean addSocketToList(Socket s) {
+	public static synchronized boolean addPeerHandlerToList(PeerHandler ph) {
 		boolean exists = false;
-		for(Socket currentSocket : peerSocketList) {
-			if(s.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
+		for(PeerHandler currentPeer : peerHandlerList) {
+			Socket currentSocket = currentPeer.socket;
+			if(ph.socket.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
 				exists = true;
 			}
 		}
 		if(!exists) {
-			peerSocketList.add(s);
+			peerHandlerList.add(ph);
 		}
 		return !exists;
 	}
 
 }
+
