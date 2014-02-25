@@ -37,7 +37,6 @@ public class peerProcess {
 		}
 		peerID = Integer.valueOf(args[0]);
 		Logger.setupLogger(peerID);
-		Logger.connectedTo(123);
 		
 		//read the CommonInfo file
 		try{
