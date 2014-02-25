@@ -5,13 +5,14 @@ import java.util.ArrayList;
 
 
 public class Server implements Runnable {
-	private final int thePort = 53535;
+	private int thePort;
 	ArrayList<RemotePeerInfo> peerList;
 	ArrayList<Socket> peerSocketList;
 	ServerSocket serverSocket;
 	
-	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<Socket> peerSocketList) {
+	public Server(ArrayList<RemotePeerInfo> peerList, ArrayList<Socket> peerSocketList, int portNum) {
 		this.peerList = peerList;
+		this.thePort = portNum;
 		this.peerSocketList = peerSocketList;
 		try {
 			serverSocket = new ServerSocket(thePort);
