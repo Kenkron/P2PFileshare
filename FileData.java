@@ -41,6 +41,8 @@ public class FileData{
 	private void breakFile(int segmentSize) throws IOException{
 		File inputFile = new File(FILE_NAME);
 		FileInputStream input=new FileInputStream(inputFile);
+		int numOfParts=(int) Math.ceil(inputFile.length()/(float)segmentSize);
+		segmentOwned=new boolean[numOfParts];
 		int partCounter=0;
 		while (input.available()>0){
 			byte[] nextData=new byte[Math.min(segmentSize,input.available())];
@@ -48,7 +50,6 @@ public class FileData{
 			addPart(partCounter, nextData);
 			partCounter++;
 		}
-		segmentOwned=new boolean[partCounter];
 		for (int i = 0; i< segmentOwned.length; i++){
 			segmentOwned[i]=true;
 		}
@@ -58,6 +59,9 @@ public class FileData{
 	 * saving it to the disk immediately as a file under the 
 	 * temporary directory.*/
 	public void addPart(int part,byte[] data) throws IOException{
+		File outputDirectory = new File(TEMP_DIR);
+		if (!outputDirectory.exists())
+			outputDirectory.mkdir();
 		File outputFile = new File(TEMP_DIR+FILE_NAME+part+TEMP_EXTENSION);
 		FileOutputStream output = new FileOutputStream(outputFile);
 		output.write(data);
@@ -71,6 +75,7 @@ public class FileData{
 		FileInputStream input = new FileInputStream(inputFile);
 		byte[] data=new byte[(int) inputFile.length()];
 		input.read(data);
+		input.close();
 		return data;
 	}
 	
@@ -90,15 +95,35 @@ public class FileData{
 		}
 		return !missingPiece;
 	}
-	
+
 	/**returns the final file.  Not to be called until isComplete returns true
 	 * @throws IOException */
 	public void writeFinalFile() throws IOException{
-		File outputFile = new File(FILE_NAME);
+		writeFinalFile(FILE_NAME);
+	}
+	
+	/**returns the final file.  Not to be called until isComplete returns true
+	 * @param the destination file path
+	 * @throws IOException */
+	public void writeFinalFile(String filename) throws IOException{
+		File outputFile = new File(filename);
 		FileOutputStream output = new FileOutputStream(outputFile);
 		for (int i=0;i<segmentOwned.length;i++){
 			byte[] nextSegment=getPart(i);
 			output.write(nextSegment);
 		}
+		output.close();
+	}
+	
+	/**remove all temporary files*/
+	public void clearCache(){
+		File tempDir=new File(TEMP_DIR);
+	    File[] files = tempDir.listFiles();
+	    if(files!=null) { //some JVMs return null for empty dirs
+	        for(File f: files) {
+	            f.delete();
+	        }
+	    }
+		tempDir.delete();
 	}
 }
