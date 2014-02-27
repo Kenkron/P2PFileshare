@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class peerProcess {
 		
 		startServerConnectToPeers();
 		
-	    //create the Timer classes for checking for better neighbor
+	    	//create the Timer classes for checking for better neighbor
 		Timer preferredNeighborTimer = new Timer();
 		Timer optimisticUnchokeTimer = new Timer();	
 		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()
