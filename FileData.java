@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class FileData{
 
 	/**the temporary directory for storing the file parts*/
-	public static final String TEMP_DIR="./part/";
+	public final String TEMP_DIR;
 	
 	/**the file extension for temporary file parts*/
 	public static final String TEMP_EXTENSION=".part";
@@ -22,16 +22,18 @@ public class FileData{
 
 	/**creates a fileData that will ultimately have the given number of segments.
 	 * Used when the file is not on this machine*/
-	public FileData(int numberOfSegments, String filename){
-		segmentOwned=new boolean[numberOfSegments];
+	public FileData(String tempDir, int numberOfSegments, String filename){
+		TEMP_DIR=tempDir;
 		FILE_NAME=filename;
+		segmentOwned=new boolean[numberOfSegments];
 	}
 	
 	/**creates a fileData based on the given filename.
 	 * Used when the file is already present
 	 * @throws IOException */
-	public FileData(String filename, int segmentSize) throws IOException{
+	public FileData(String tempDir, String filename, int segmentSize) throws IOException{
 		FILE_NAME=filename;
+		TEMP_DIR=tempDir;
 		breakFile(segmentSize);
 	}
 	

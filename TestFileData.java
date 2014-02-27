@@ -16,7 +16,7 @@ public class TestFileData {
 			if (completeFile.canRead()){
 				System.out.println("File: "+filename);
 				System.out.println("\t separating file into sections");
-				FileData splitter = new FileData(filename,segmentSize);
+				FileData splitter = new FileData("./part/",filename,segmentSize);
 				System.out.println("\t recombining sections");
 				splitter.writeFinalFile(filename+".out");
 				System.out.println("\t checking original and final file for equality");
@@ -64,7 +64,7 @@ public class TestFileData {
 		int in = System.in.read();
 		if (in == 10){
 			System.out.println("pressed "+in+", clearing cache and exiting.");
-			FileData splitter = new FileData(args[0],segmentSize);
+			FileData splitter = new FileData("./part/",args[0],segmentSize);
 			splitter.clearCache();
 		}else{
 			System.out.println("pressed "+in+", exiting without clearing cache.");
