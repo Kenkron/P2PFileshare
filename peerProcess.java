@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -63,18 +62,18 @@ public class peerProcess {
 		readPeerInfo();
 		
 		startServerConnectToPeers();
-
-		serverThread.join();
-
-		Logger.closeLogger();
 		
-	    //create the Timer classes for checking for better neighbors
+	    	//create the Timer classes for checking for better neighbor
 		Timer preferredNeighborTimer = new Timer();
 		Timer optimisticUnchokeTimer = new Timer();	
 		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()
 		                                      , 0, UnchokingInterval);
 		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
 		                                      0, OptimisticUnchokingInterval);
+
+		serverThread.join();
+		
+		Logger.closeLogger();
 	}
 	
 	/**read and parse the file ./Common.cfg
@@ -204,6 +203,6 @@ public class peerProcess {
 		}
 		return foundRPI;
 	}
-
 }
+
 
