@@ -10,6 +10,7 @@ public class PeerHandler {
 	private OutputStream oos = null;
 	private InputHandler ih = null;
 	private boolean sentHandshake = false;
+	private boolean otherPeerIsInterested = false;
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
@@ -89,11 +90,11 @@ public class PeerHandler {
 					}
 					else if(mType == Message.MessageType.INTERESTED) {
 						//no payload
-						//TODO
+						//TODO: set otherPeerIsInterested to true
 					}
 					else if(mType == Message.MessageType.NOT_INTERESTED) {
 						//no payload
-						//TODO
+						//TODO: set otherPeerIsInterested to false
 					}
 					else {
 						payload = new byte[len];
