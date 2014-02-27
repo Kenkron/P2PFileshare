@@ -2,6 +2,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.io.IOException;
 import java.net.Socket;
@@ -17,6 +18,7 @@ public class peerProcess {
 	
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
 	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
+	public static HashMap<RemotePeerInfo, PeerHandler> rpiToPeerHandler = new HashMap<RemotePeerInfo, PeerHandler>();
 	
 	public static Server server;
 	public static Thread serverThread;
@@ -142,6 +144,7 @@ public class peerProcess {
 			    else {
 			    	//add to peerList
 			    	peerList.add(newRPI);
+			    	rpiToPeerHandler.put(newRPI, null);
 			    }
 			}
 			br.close();
@@ -187,8 +190,19 @@ public class peerProcess {
 		}
 		if(!exists) {
 			peerHandlerList.add(ph);
+			rpiToPeerHandler.put(getRPI(ph), ph);
 		}
 		return !exists;
+	}
+	
+	public static synchronized RemotePeerInfo getRPI(PeerHandler ph) {
+		RemotePeerInfo foundRPI = null;
+		for(RemotePeerInfo rpi : peerList) {
+			if(rpi.peerAddress.equals(ph.socket.getInetAddress().getCanonicalHostName())) {
+				foundRPI = rpi;
+			}
+		}
+		return foundRPI;
 	}
 
 }
