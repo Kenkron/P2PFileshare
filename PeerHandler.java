@@ -4,9 +4,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class PeerHandler {
+	private static String HELLO = "HELLO";
+	
 	public Socket socket = null;
 	private OutputStream oos = null;
 	private InputHandler ih = null;
+	private boolean sentHandshake = false;
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
@@ -20,7 +23,19 @@ public class PeerHandler {
 	}
 	
 	public void sendHandshake() {
-		
+		//TODO: check about the conflicting requirements
+		String handshakeMessage = "HELLO";
+		byte[] handshakeBytes = handshakeMessage.getBytes();
+		for(int i = 5;i<32;i++) {
+			handshakeBytes[i] = 0;
+		}
+		try {
+			oos.write(handshakeBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		sentHandshake = true;
 	}
 
 	/**
@@ -44,12 +59,58 @@ public class PeerHandler {
 
 		@Override
 		public void run() {
+			byte[] input = new byte[32];
+			byte[] payload;
 			try {
+				//listen for handshake:
+				ois.read(input, 0, 32);
+				//test handshake
+				if(new String(input, 0, 5).equals(HELLO)) {
+					//handshake approved
+				}
+				if(!sentHandshake) sendHandshake();
+				
 				int next=0;
 				while(next>=0) {
-					next = ois.read();
+					next = ois.read(input, 0, 5);//messageLength[0-3], messageType[4]
 					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" recieved "+next);
-					//TODO: HANDLE INCOMING MESSAGES
+					
+					int len = Integer.valueOf(new String(input, 0, 4));
+					int type = Integer.valueOf(new String(input, 4, 1));
+					Message.MessageType mType = Message.MessageType.values()[type];
+					//TODO: HANDLE INCOMING MESSAGES; maybe make this its own method
+					if(mType == Message.MessageType.CHOKE) {
+						//no payload
+						//TODO
+					}
+					else if(mType == Message.MessageType.UNCHOKE) {
+						//no payload
+						//TODO
+					}
+					else if(mType == Message.MessageType.INTERESTED) {
+						//no payload
+						//TODO
+					}
+					else if(mType == Message.MessageType.NOT_INTERESTED) {
+						//no payload
+						//TODO
+					}
+					else {
+						payload = new byte[len];
+						ois.read(payload);
+						if(mType == Message.MessageType.HAVE) {
+							//TODO
+						}
+						else if(mType == Message.MessageType.BITFIELD) {
+							//TODO
+						}
+						else if(mType == Message.MessageType.REQUEST) {
+							//TODO
+						}
+						else if(mType == Message.MessageType.PIECE) {
+							//TODO
+						}
+					}
 				}
 			}
 			catch(IOException e) {
