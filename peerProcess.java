@@ -197,7 +197,8 @@ public class peerProcess {
 	public static synchronized RemotePeerInfo getRPI(PeerHandler ph) {
 		RemotePeerInfo foundRPI = null;
 		for(RemotePeerInfo rpi : peerList) {
-			if(rpi.peerAddress.equals(ph.socket.getInetAddress().getCanonicalHostName())) {
+			if(rpi.peerAddress.equals(ph.socket.getInetAddress().getCanonicalHostName()) ||
+					rpi.peerAddress.equals(ph.socket.getInetAddress().toString())) {
 				foundRPI = rpi;
 			}
 		}
