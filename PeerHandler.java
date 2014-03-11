@@ -88,8 +88,8 @@ public class PeerHandler {
 				if(!sentHandshake) sendHandshake();
 				
 				int next=0;
-				while(next>=0) {
-					next = ois.read(input, 0, 5);//messageLength[0-3], messageType[4]
+				while((next = ois.read(input, 0, 5)) >=0) {
+					//messageLength[0-3], messageType[4]
 					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" recieved "+next);
 					
 					int len = Integer.valueOf(new String(input, 0, 4));
