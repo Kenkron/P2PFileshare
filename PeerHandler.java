@@ -10,7 +10,7 @@ public class PeerHandler {
 	private OutputStream oos = null;
 	private InputHandler ih = null;
 	private boolean sentHandshake = false;
-	private boolean otherPeerIsInterested = false;
+	public boolean otherPeerIsInterested = false;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
 
