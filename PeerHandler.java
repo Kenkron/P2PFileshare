@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 public class PeerHandler {
 	private static String HELLO = "HELLO";
@@ -28,10 +29,11 @@ public class PeerHandler {
 	}
 	
 	public void sendHandshake() {
-		//TODO: check about the conflicting requirements
 		String handshakeMessage = "HELLO";
 		byte[] handshakeBytes = new byte[32];
 		System.arraycopy(handshakeMessage.getBytes(), 0, handshakeBytes, 0, handshakeMessage.getBytes().length);
+		byte[] peerIDBytes = ByteBuffer.allocate(4).putInt(peerProcess.peerID).array();
+		System.arraycopy(peerIDBytes, 0, handshakeBytes, 28, 4);
 		try {
 			oos.write(handshakeBytes);
 		}
@@ -63,14 +65,28 @@ public class PeerHandler {
 		@Override
 		public void run() {
 			byte[] input = new byte[32];
-			byte[] payload;
+			byte[] payload = new byte[4];
 			try {
 				//listen for handshake:
 				ois.read(input, 0, 32);
 				//test handshake
+				System.out.println("The received handshake message: " + new String(input, 0, 32));
 				if(new String(input, 0, 5).equals(HELLO)) {
-					//handshake approved
+					System.arraycopy(input, 28, payload, 0, 4);
+					int receivedPeerID = ByteBuffer.wrap(payload).getInt();
+					int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
+					if(receivedPeerID == expectedPeerID) {
+						//approved
+						System.out.println("APPROVED");
+					}
+					else {
+						System.out.println("NOT APPROVED");
+						//TODO: what do we do if the expected peerID is not the received peerID?
+						//exception? loop until expected is received? resend handshake?
+					}
 				}
+				//TODO: should we ignore a non-handshake first message? loop until a good one is found?
+				//this should probably go inside the approval section
 				if(!sentHandshake) sendHandshake();
 				
 				int next=0;
