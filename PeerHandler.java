@@ -28,10 +28,8 @@ public class PeerHandler {
 	public void sendHandshake() {
 		//TODO: check about the conflicting requirements
 		String handshakeMessage = "HELLO";
-		byte[] handshakeBytes = handshakeMessage.getBytes();
-		for(int i = 5;i<32;i++) {
-			handshakeBytes[i] = 0;
-		}
+		byte[] handshakeBytes = new byte[32];
+		System.arraycopy(handshakeMessage.getBytes(), 0, handshakeBytes, 0, handshakeMessage.getBytes().length);
 		try {
 			oos.write(handshakeBytes);
 		}
