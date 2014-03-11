@@ -19,7 +19,7 @@ public class Logger {
 			if(!f.exists()) {
 				f.createNewFile();
 			}
-			fileWriter = new FileWriter(f.getAbsoluteFile(), true);//Should this be appending?
+			fileWriter = new FileWriter(f.getAbsoluteFile(), false);//Should this be appending?
 		}
 		catch(IOException e) {
 			e.printStackTrace();
