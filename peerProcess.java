@@ -164,6 +164,9 @@ public class peerProcess {
 				if(addPeerHandlerToList(ph)) {
 					ph.start();
 					Logger.connectedTo(Integer.valueOf(rpi.peerId));
+					
+					//The client that connects to the other client sends first handshake
+					ph.sendHandshake();
 				}
 			}
 			catch(UnknownHostException e) {
