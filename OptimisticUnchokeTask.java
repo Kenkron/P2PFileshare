@@ -6,6 +6,6 @@ public class OptimisticUnchokeTask extends TimerTask {
     }
     
     public void run() {
-        System.out.println("Checking for optimistically unchoked...");
+        
     }
 }

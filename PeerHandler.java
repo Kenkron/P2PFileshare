@@ -100,7 +100,7 @@ public class PeerHandler {
 					}
 					else {
 						payload = new byte[len];
-						dataRcvd += payload; //Increment the data received count
+						dataRcvd += len; //Increment the data received count
 						ois.read(payload);
 						if(mType == Message.MessageType.HAVE) {
 							//TODO
@@ -123,7 +123,13 @@ public class PeerHandler {
 		}
 	}
 	
+	/** Clears the data received count*/
 	public void clearDataCounter() {
 		dataRcvd = 0;
+	}
+	
+	/** Fetches the data received count*/
+	public int getDataCounter() {
+		return dataRcvd;
 	}
 }
