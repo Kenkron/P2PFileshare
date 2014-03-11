@@ -17,6 +17,7 @@ public class peerProcess {
 	
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
 	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
+	public static ArrayList<RemotePeerInfo> preferredNeighbors = new ArrayList<RemotePeerInfo>();
 	public static HashMap<RemotePeerInfo, PeerHandler> rpiToPeerHandler = new HashMap<RemotePeerInfo, PeerHandler>();
 	
 	public static Server server;
@@ -63,7 +64,7 @@ public class peerProcess {
 		
 		startServerConnectToPeers();
 		
-	    	//create the Timer classes for checking for better neighbor
+	    //create the Timer classes for checking for better neighbor
 		Timer preferredNeighborTimer = new Timer();
 		Timer optimisticUnchokeTimer = new Timer();	
 		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()

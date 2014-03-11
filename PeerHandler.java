@@ -11,6 +11,8 @@ public class PeerHandler {
 	private InputHandler ih = null;
 	private boolean sentHandshake = false;
 	private boolean otherPeerIsInterested = false;
+	/**The amount of data received from this peer since the last choke cycle*/
+	private int dataRcvd = 0;
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
@@ -98,6 +100,7 @@ public class PeerHandler {
 					}
 					else {
 						payload = new byte[len];
+						dataRcvd += payload; //Increment the data received count
 						ois.read(payload);
 						if(mType == Message.MessageType.HAVE) {
 							//TODO
@@ -118,5 +121,9 @@ public class PeerHandler {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public void clearDataCounter() {
+		dataRcvd = 0;
 	}
 }
