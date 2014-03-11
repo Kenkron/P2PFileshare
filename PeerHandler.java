@@ -129,7 +129,7 @@ public class PeerHandler {
 	}
 	
 	/** Fetches the data received count*/
-	public int getDataCounter() {
+	public int getDataRcvd() {
 		return dataRcvd;
 	}
 }
