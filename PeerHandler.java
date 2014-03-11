@@ -13,9 +13,11 @@ public class PeerHandler {
 	public boolean otherPeerIsInterested = false;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
+	private boolean[] remoteSegments;
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
+		//@ TODO: remoteSegments=new boolean[FileData.length];
 		try {
 			oos = s.getOutputStream();
 			ih = new InputHandler(s);

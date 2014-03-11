@@ -15,6 +15,7 @@ public class peerProcess {
 	public static int peerID;
 	public static int myPeerPort;
 	
+	private static RemotePeerInfo myRPI;
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
 	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
 	public static ArrayList<RemotePeerInfo> preferredNeighbors = new ArrayList<RemotePeerInfo>();
@@ -38,7 +39,10 @@ public class peerProcess {
 	/**The size of the pieces sent given by Common.cfg.*/
 	public static int PieceSize=0;
 	
-	public static void main(String[] args) throws InterruptedException {
+	/**This is the FileData currently in transmission*/
+	public static FileData myCopy;
+	
+	public static void main(String[] args) throws InterruptedException, IOException {
 		if(args.length != 1) {
 			System.out.println("Improper format. Use 'java peerProcess peerID'");
 			System.exit(0);
@@ -61,6 +65,12 @@ public class peerProcess {
 		Logger.debug(1, "Config Files Loaded");
 		
 		readPeerInfo();
+		
+		if (myRPI.hasFile){
+			myCopy=new FileData("temp", FileName, PieceSize);
+		}else{
+			myCopy=new FileData("temp", (int)(Math.ceil(((float)PieceSize)/FileSize)), FileName);
+		}
 		
 		startServerConnectToPeers();
 		
@@ -140,6 +150,7 @@ public class peerProcess {
 			    
 			    if(Integer.valueOf(newRPI.peerId) == peerID) {
 			    	myPeerPort = Integer.valueOf(newRPI.peerPort);
+			    	myRPI = newRPI;
 			    }
 			    else {
 			    	//add to peerList
