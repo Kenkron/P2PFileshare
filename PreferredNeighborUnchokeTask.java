@@ -26,5 +26,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 			}
 			peer.clearDataCounter();
 		}
+		
+		//TODO: Send choke/unchoke messages (make sure to log these? or does the peerHandler do that?)
     }
 }
