@@ -70,17 +70,16 @@ public class PeerHandler {
 				//listen for handshake:
 				ois.read(input, 0, 32);
 				//test handshake
-				System.out.println("The received handshake message: " + new String(input, 0, 32));
+				Logger.debug(4, "Received handshake message: " + new String(input, 0, 32));
 				if(new String(input, 0, 5).equals(HELLO)) {
 					System.arraycopy(input, 28, payload, 0, 4);
 					int receivedPeerID = ByteBuffer.wrap(payload).getInt();
 					int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
 					if(receivedPeerID == expectedPeerID) {
-						//approved
-						System.out.println("APPROVED");
+						Logger.debug(4, "Handshake Approved");
 					}
 					else {
-						System.out.println("NOT APPROVED");
+						Logger.debug(4, "Handshake NOT Approved");
 						//TODO: what do we do if the expected peerID is not the received peerID?
 						//exception? loop until expected is received? resend handshake?
 					}
@@ -95,7 +94,7 @@ public class PeerHandler {
 				int next=0;
 				while((next = ois.read(payload, 0, 4)) >=0) {
 					//messageLength[0-3], messageType[4]
-					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" recieved "+next);
+					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" received "+next);
 					
 					int len = ByteBuffer.wrap(payload).getInt();
 					int type = ois.read();
