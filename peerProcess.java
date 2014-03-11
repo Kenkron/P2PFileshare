@@ -101,7 +101,7 @@ public class peerProcess {
 				String value=segments[1];
 				
 				if (name.equals("NumberOfPreferredNeighbors")){
-					NumberOfPreferredNeightbors=Integer.parseInt(value);
+					NumberOfPreferredNeighbors=Integer.parseInt(value);
 				} else if (name.equals("UnchokingInterval")){
 					UnchokingInterval=Integer.parseInt(value);
 				} else if (name.equals("OptimisticUnchokingInterval")){
