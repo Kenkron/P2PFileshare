@@ -24,7 +24,7 @@ public class peerProcess {
 	public static Thread serverThread;
 	
 	/**the preferred number of active piers given by Common.cfg. Defaults to 2.*/
-	public static int NumberOfPreferredNeightbors=2;
+	public static int NumberOfPreferredNeighbors=2;
 	/**the delay (in milliseconds) between preferred neighbor unchoking.
 	 * given by Common.cfg.  Defaults to 1.*/
 	public static int UnchokingInterval=1;
