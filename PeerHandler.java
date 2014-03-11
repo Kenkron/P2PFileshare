@@ -89,13 +89,17 @@ public class PeerHandler {
 				//this should probably go inside the approval section
 				if(!sentHandshake) sendHandshake();
 				
+				// @ TODO handle bitfield here.
+				
+				payload = new byte[4];
 				int next=0;
-				while((next = ois.read(input, 0, 5)) >=0) {
+				while((next = ois.read(payload, 0, 4)) >=0) {
 					//messageLength[0-3], messageType[4]
 					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" recieved "+next);
 					
-					int len = Integer.valueOf(new String(input, 0, 4));
-					int type = Integer.valueOf(new String(input, 4, 1));
+					int len = ByteBuffer.wrap(payload).getInt();
+					int type = ois.read();
+					
 					Message.MessageType mType = Message.MessageType.values()[type];
 					//TODO: HANDLE INCOMING MESSAGES; maybe make this its own method
 					if(mType == Message.MessageType.CHOKE) {
