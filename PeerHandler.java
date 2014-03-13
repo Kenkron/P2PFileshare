@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 public class PeerHandler {
-	private static String HELLO = "HELLO";
+	private static final String HELLO = "HELLO";
 	
 	public Socket socket = null;
 	private OutputStream oos = null;
@@ -29,9 +29,8 @@ public class PeerHandler {
 	}
 	
 	public void sendHandshake() {
-		String handshakeMessage = "HELLO";
 		byte[] handshakeBytes = new byte[32];
-		System.arraycopy(handshakeMessage.getBytes(), 0, handshakeBytes, 0, handshakeMessage.getBytes().length);
+		System.arraycopy(HELLO.getBytes(), 0, handshakeBytes, 0, HELLO.getBytes().length);
 		byte[] peerIDBytes = ByteBuffer.allocate(4).putInt(peerProcess.peerID).array();
 		System.arraycopy(peerIDBytes, 0, handshakeBytes, 28, 4);
 		try {
