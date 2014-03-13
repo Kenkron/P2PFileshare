@@ -18,7 +18,6 @@ public class peerProcess {
 	private static RemotePeerInfo myRPI;
 	public static ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
 	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
-	public static ArrayList<RemotePeerInfo> preferredNeighbors = new ArrayList<RemotePeerInfo>();
 	public static HashMap<RemotePeerInfo, PeerHandler> rpiToPeerHandler = new HashMap<RemotePeerInfo, PeerHandler>();
 	
 	public static Server server;
