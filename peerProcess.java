@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.IOException;
@@ -38,9 +39,16 @@ public class peerProcess {
 	public static int FileSize=0;
 	/**The size of the pieces sent given by Common.cfg.*/
 	public static int PieceSize=0;
+	/**Calculates and returns the number of pieces for the file, or -1 if not set yet*/
+	public static int getNumberOfSegments() {
+		return (FileSize > 0) ? (int)(Math.ceil(((float)PieceSize)/FileSize)) : -1; 
+	}
 	
 	/**This is the FileData currently in transmission*/
 	public static FileData myCopy;
+	
+	/**This client's bitfield*/
+	public static volatile byte[] myBitfield;
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		if(args.length != 1) {
@@ -67,9 +75,12 @@ public class peerProcess {
 		readPeerInfo();
 		
 		if (myRPI.hasFile){
-			myCopy=new FileData("temp", FileName, PieceSize);
+			myCopy=new FileData("./peer_" + peerID + "/", FileName, PieceSize);
+			myBitfield = new byte[getNumberOfSegments()];
+			Arrays.fill(myBitfield, (byte)1);
 		}else{
-			myCopy=new FileData("temp", (int)(Math.ceil(((float)PieceSize)/FileSize)), FileName);
+			myCopy=new FileData("./peer_" + peerID + "/", getNumberOfSegments(), FileName);
+			myBitfield = new byte[getNumberOfSegments()];
 		}
 		
 		startServerConnectToPeers();

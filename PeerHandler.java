@@ -41,6 +41,10 @@ public class PeerHandler {
 		}
 		sentHandshake = true;
 	}
+	
+	public void sendBitfield() {
+		
+	}
 
 	/**
 	 * Start the InputHandler
