@@ -13,6 +13,8 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
      * the highest data rate peer, and remove it from the list. This method
      * assumes that k < total number of peers. */
      public void run() {
+        //The peerList below is initialized to all peers, but after this method
+        //runs, it will contain "un-preferred" neighbors
         ArrayList<RemotePeerInfo> peerList = null;
         Collections.copy(peerList, peerProcess.peerList);
         //The empty preferred list below will contain the preferred neighbors 
@@ -23,6 +25,8 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         if (peerList.size() <= peerProcess.NumberOfPreferredNeighbors) {
             //if so, just make everyone a preferred neighbor
             Collections.copy(preferredList, peerList);
+            //now clear the list of "un-preferred" neighbors
+            peerList.clear();
         }
         //otherwise, check for k best
         else {
@@ -48,12 +52,17 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
             }
         }
         
-        //Now clear data counters for all neighbors
+        //now clear data counters for all neighbors
         for (int x = 0; x < peerProcess.peerList.size(); x++)
             peerProcess.rpiToPeerHandler.get(peerProcess.peerList.get(x)).clearDataCounter();
         
-        //TODO: Send choke/unchoke messages (make sure to log these? or does the peerHandler do that?)
+        //unchoke preferred neighbors
+        for (int i = 0; i < preferredList.size(); i++)
+            peerProcess.rpiToPeerHandler.get(preferredList.get(i)).sendUnchoke();
         
+        //choke un-preferred neighbors
+        for (int y = 0; y < peerList.size(); y++)
+            peerProcess.rpiToPeerHandler.get(peerList.get(y)).sendChoke();
      }
 
 }
