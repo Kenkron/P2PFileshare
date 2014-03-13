@@ -12,6 +12,7 @@ public class PeerHandler {
 	private InputHandler ih = null;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
+	private boolean choked = true;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
 	private boolean[] remoteSegments;
@@ -42,9 +43,27 @@ public class PeerHandler {
 		sentHandshake = true;
 	}
 	
+<<<<<<< HEAD
+	public void sendChoke() {
+	    //TODO: send choke message
+	    byte[] chokeBytes = new byte[5];
+	    
+	    this.choked = true;
+	    //TODO: log this
+	}
+	
+	public void sendUnchoke() {
+	    if (choked) {
+	        //TODO: send unchoke message, and wait for request message
+	        //TODO: when you get a request message, unchoke this
+	        //TODO: log that you unchoked it
+	    }
+	}	
+
 	public void sendBitfield() {
 		
 	}
+
 
 	/**
 	 * Start the InputHandler
@@ -110,7 +129,7 @@ public class PeerHandler {
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
 						//no payload
-						//TODO
+						//TODO: send back a request message
 					}
 					else if(mType == Message.MessageType.INTERESTED) {
 						//no payload
