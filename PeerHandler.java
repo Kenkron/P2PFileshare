@@ -45,6 +45,8 @@ public class PeerHandler {
 	
 	public void sendChoke() {
 	    //TODO: send choke message
+	    byte[] chokeBytes = new byte[5];
+	    
 	    this.choked = true;
 	    //TODO: log this
 	}
