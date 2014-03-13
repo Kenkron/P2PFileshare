@@ -43,6 +43,7 @@ public class PeerHandler {
 		sentHandshake = true;
 	}
 	
+<<<<<<< HEAD
 	public void sendChoke() {
 	    //TODO: send choke message
 	    byte[] chokeBytes = new byte[5];
@@ -57,10 +58,13 @@ public class PeerHandler {
 	        //TODO: when you get a request message, unchoke this
 	        //TODO: log that you unchoked it
 	    }
+	}	
+
+	public void sendBitfield() {
+		
 	}
-	
-	
-	
+
+
 	/**
 	 * Start the InputHandler
 	 */
