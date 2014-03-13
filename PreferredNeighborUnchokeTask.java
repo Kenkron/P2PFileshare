@@ -6,10 +6,6 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 
     public PreferredNeighborUnchokeTask() {
     }
-
-    //@ TODO:
-    //most likely, the following method will need to create a sorted list
-    //of RPI based on getDataRcvd, and take the tow highest of that list.
     
     /** Version 2: This method is called by peerProcess according to a given
      * interval. This method will find the k preferred neighbors. For each of 
