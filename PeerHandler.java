@@ -43,7 +43,6 @@ public class PeerHandler {
 		sentHandshake = true;
 	}
 	
-<<<<<<< HEAD
 	public void sendChoke() {
 	    //TODO: send choke message
 	    byte[] chokeBytes = new byte[5];
