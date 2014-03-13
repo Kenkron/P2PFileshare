@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 /**and extension of {@link HashMap} that will hold segments of a byte array
@@ -19,6 +21,8 @@ public class FileData{
 	
 	/**a cached array of booleans indicating whether each segment is owned*/
 	boolean[] segmentOwned;
+	/**The client's bitfield, should be updated along with segmentOwner*/
+	volatile byte[] bitfield;
 
 	/**creates a fileData that will ultimately have the given number of segments.
 	 * Used when the file is not on this machine*/
@@ -35,6 +39,7 @@ public class FileData{
 		FILE_NAME=filename;
 		TEMP_DIR=tempDir;
 		breakFile(segmentSize);
+		Arrays.fill(bitfield, (byte)1);
 	}
 	
 	/**breaks the file given by FILE_NAME into segments in the DEMP_DIR directory
@@ -55,7 +60,37 @@ public class FileData{
 		for (int i = 0; i< segmentOwned.length; i++){
 			segmentOwned[i]=true;
 		}
+		updateBitfield();
 	}
+	
+	/**Set segmentOwned and automatically calculates the new bitfield*/
+	private void updateSegment(int i, boolean val) {
+		segmentOwned[i] = val;
+		int bitfieldIndex = i/8;
+		boolean[] tempBool = null;
+		System.arraycopy(segmentOwned, (i/8)*8, tempBool, 0, 8);
+		bitfield[bitfieldIndex] = boolToByte(tempBool);
+	}
+	/**Updates bitfield to match segmentOwned. Call after finished updating segments*/
+	private void updateBitfield() {
+		int index = 0;
+		for(int i = 0;i<segmentOwned.length;i+=8) {
+			boolean[] tempBool = null;
+			System.arraycopy(segmentOwned, i, tempBool, 0, 8);
+			bitfield[index] = boolToByte(tempBool);
+			index++;
+		}
+	}
+	/**Converts a boolean array (expected length [0,8]) to a byte)*/
+	private byte boolToByte(boolean[] arr) {
+		byte val = 0;
+		for(boolean x : arr) {
+			val = (byte) (val << 1);
+			val = (byte) (val | (x ? 1:0));
+		}
+		return val;
+	}
+	
 	
 	/**adds a file part to this FileData, 
 	 * saving it to the disk immediately as a file under the 

@@ -47,9 +47,6 @@ public class peerProcess {
 	/**This is the FileData currently in transmission*/
 	public static FileData myCopy;
 	
-	/**This client's bitfield*/
-	public static volatile byte[] myBitfield;
-	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		if(args.length != 1) {
 			System.out.println("Improper format. Use 'java peerProcess peerID'");
@@ -76,11 +73,8 @@ public class peerProcess {
 		
 		if (myRPI.hasFile){
 			myCopy=new FileData("./peer_" + peerID + "/", FileName, PieceSize);
-			myBitfield = new byte[getNumberOfSegments()];
-			Arrays.fill(myBitfield, (byte)1);
 		}else{
 			myCopy=new FileData("./peer_" + peerID + "/", getNumberOfSegments(), FileName);
-			myBitfield = new byte[getNumberOfSegments()];
 		}
 		
 		startServerConnectToPeers();
