@@ -79,8 +79,8 @@ public class FileData{
 	private void updateBitfield() {
 		int index = 0;
 		for(int i = 0;i<segmentOwned.length;i+=8) {
-			boolean[] tempBool = null;
-			System.arraycopy(segmentOwned, i, tempBool, 0, 8);
+			boolean[] tempBool = new boolean[8];
+			System.arraycopy(segmentOwned, i, tempBool, 0, Math.min(segmentOwned.length-(i/8)*8, 8));
 			bitfield[index] = boolToByte(tempBool);
 			index++;
 		}

@@ -17,6 +17,7 @@ public class PeerHandler {
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
 	private boolean[] remoteSegments;
+	private byte[] otherBitfield = new byte[peerProcess.myCopy.bitfield.length];
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
@@ -74,7 +75,25 @@ public class PeerHandler {
 	}	
 
 	public void sendBitfield() {
-		
+		boolean hasPartialFile = false;
+		byte[] myBitfield = peerProcess.myCopy.bitfield;
+		for(byte b : myBitfield) {
+			if(b != 0) hasPartialFile = true;
+		}
+		if(hasPartialFile) {
+			int messageLength = 1 + myBitfield.length;
+			byte[] sendBitfieldMessage = new byte[messageLength + 4];
+			byte[] messageLengthBytes = ByteBuffer.allocate(4).putInt(messageLength).array();
+			System.arraycopy(messageLengthBytes, 0, sendBitfieldMessage, 0, 4);
+			sendBitfieldMessage[4] = (byte) Message.MessageType.BITFIELD.ordinal();
+			System.arraycopy(myBitfield, 0, sendBitfieldMessage, 5, myBitfield.length);
+			try {
+			    oos.write(sendBitfieldMessage);
+		    }
+		    catch(IOException e) {
+		    	e.printStackTrace();
+		    }
+		}
 	}
 	
 	public void sendRequest() {
@@ -127,8 +146,6 @@ public class PeerHandler {
 				//this should probably go inside the approval section
 				if(!sentHandshake) sendHandshake();
 				
-				// @ TODO handle bitfield here.
-				
 				payload = new byte[4];
 				int next=0;
 				while((next = ois.read(payload, 0, 4)) >=0) {
@@ -172,7 +189,8 @@ public class PeerHandler {
 							//TODO
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
-							//TODO
+							//Note: this should not go before while loop because a bitfield message doesn't need to be sent
+							otherBitfield = payload;
 						}
 						else if(mType == Message.MessageType.REQUEST) {
 							//TODO
