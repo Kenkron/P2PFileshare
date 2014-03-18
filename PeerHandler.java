@@ -12,7 +12,7 @@ public class PeerHandler {
 	private InputHandler ih = null;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
-	private boolean choked = true;
+	private boolean otherPeerIsChoked = true;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
 	private boolean[] remoteSegments;
@@ -46,13 +46,20 @@ public class PeerHandler {
 	public void sendChoke() {
 	    //TODO: send choke message
 	    byte[] chokeBytes = new byte[5];
+	    chokeBytes[3] = (byte) 1;//set message length to 1
+        chokeBytes[4] = (byte) Message.MessageType.CHOKE.ordinal(); 
+		try {
+			oos.write(chokeBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+	    this.otherPeerIsChoked = true;
 	    
-	    this.choked = true;
-	    //TODO: log this
 	}
 	
 	public void sendUnchoke() {
-	    if (choked) {
+	    if (otherPeerIsChoked) {
 	        //TODO: send unchoke message, and wait for request message
 	        //TODO: when you get a request message, unchoke this
 	        //TODO: log that you unchoked it
@@ -125,6 +132,9 @@ public class PeerHandler {
 					if(mType == Message.MessageType.CHOKE) {
 						//no payload
 						//TODO
+						Logger.debug(4, "Peer " + peerProcess.peerID
+	                                 + " is choked by " + 
+	                                 peerProcess.getRPI(PeerHandler.this).peerId);
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
 						//no payload
