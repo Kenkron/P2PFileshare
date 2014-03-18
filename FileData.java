@@ -23,13 +23,16 @@ public class FileData{
 	boolean[] segmentOwned;
 	/**The client's bitfield, should be updated along with segmentOwner*/
 	volatile byte[] bitfield;
-
+	
 	/**creates a fileData that will ultimately have the given number of segments.
 	 * Used when the file is not on this machine*/
 	public FileData(String tempDir, int numberOfSegments, String filename){
 		TEMP_DIR=tempDir;
 		FILE_NAME=filename;
 		segmentOwned=new boolean[numberOfSegments];
+		int bitfieldSize = (int)(Math.ceil(((float)numberOfSegments)/8.0));
+		bitfield = new byte[bitfieldSize];
+		findExistingPartialFiles();
 	}
 	
 	/**creates a fileData based on the given filename.
@@ -39,7 +42,6 @@ public class FileData{
 		FILE_NAME=filename;
 		TEMP_DIR=tempDir;
 		breakFile(segmentSize);
-		Arrays.fill(bitfield, (byte)1);
 	}
 	
 	/**breaks the file given by FILE_NAME into segments in the DEMP_DIR directory
@@ -50,6 +52,8 @@ public class FileData{
 		FileInputStream input=new FileInputStream(inputFile);
 		int numOfParts=(int) Math.ceil(inputFile.length()/(float)segmentSize);
 		segmentOwned=new boolean[numOfParts];
+		int bitfieldSize = (int)(Math.ceil(((float)numOfParts)/8.0));
+		bitfield = new byte[bitfieldSize];
 		int partCounter=0;
 		while (input.available()>0){
 			byte[] nextData=new byte[Math.min(segmentSize,input.available())];
@@ -67,8 +71,8 @@ public class FileData{
 	private void updateSegment(int i, boolean val) {
 		segmentOwned[i] = val;
 		int bitfieldIndex = i/8;
-		boolean[] tempBool = null;
-		System.arraycopy(segmentOwned, (i/8)*8, tempBool, 0, 8);
+		boolean[] tempBool = new boolean[8];
+		System.arraycopy(segmentOwned, (i/8)*8, tempBool, 0, Math.min(segmentOwned.length-(i/8)*8, 8));
 		bitfield[bitfieldIndex] = boolToByte(tempBool);
 	}
 	/**Updates bitfield to match segmentOwned. Call after finished updating segments*/
@@ -91,6 +95,19 @@ public class FileData{
 		return val;
 	}
 	
+	/**Updates the segmentOwned and bitfields according to any pre-existing partial files*/
+	public void findExistingPartialFiles() {
+		File outputDirectory = new File(TEMP_DIR);
+		if (!outputDirectory.exists())
+			outputDirectory.mkdir();
+		for(int part = 0;part<segmentOwned.length;part++) {
+			File partialFile = new File(TEMP_DIR+FILE_NAME+ part +TEMP_EXTENSION);
+			if(partialFile.exists()) {
+				segmentOwned[part] = true;
+			}
+			updateBitfield();
+		}
+	}
 	
 	/**adds a file part to this FileData, 
 	 * saving it to the disk immediately as a file under the 
@@ -103,7 +120,8 @@ public class FileData{
 		FileOutputStream output = new FileOutputStream(outputFile);
 		output.write(data);
 		output.close();
-		segmentOwned[part]=true;
+		//segmentOwned[part]=true;
+		updateSegment(part, true);
 	}
 	
 	/**gets a part of a file*/
