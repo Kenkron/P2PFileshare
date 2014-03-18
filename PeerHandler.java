@@ -12,7 +12,8 @@ public class PeerHandler {
 	private InputHandler ih = null;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
-	private boolean otherPeerIsChoked = true;
+	private boolean otherPeerIsChoked = false;
+	private boolean waitingForRequestFromOtherPeer = false;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
 	private boolean[] remoteSegments;
@@ -44,7 +45,6 @@ public class PeerHandler {
 	}
 	
 	public void sendChoke() {
-	    //TODO: send choke message
 	    byte[] chokeBytes = new byte[5];
 	    chokeBytes[3] = (byte) 1;//set message length to 1
         chokeBytes[4] = (byte) Message.MessageType.CHOKE.ordinal(); 
@@ -60,14 +60,25 @@ public class PeerHandler {
 	
 	public void sendUnchoke() {
 	    if (otherPeerIsChoked) {
-	        //TODO: send unchoke message, and wait for request message
-	        //TODO: when you get a request message, unchoke this
-	        //TODO: log that you unchoked it
+	        byte[] unchokeBytes = new byte[5];
+	        unchokeBytes[3] = (byte) 1;//set message length to 1
+            unchokeBytes[4] = (byte) Message.MessageType.UNCHOKE.ordinal(); 
+		    try {
+			    oos.write(unchokeBytes);
+		    }
+		    catch(IOException e) {
+		    	e.printStackTrace();
+		    }
+		    otherPeerIsChoked = false;
 	    }
 	}	
 
 	public void sendBitfield() {
 		
+	}
+	
+	public void sendRequest() {
+	    //TODO: determine random piece you need from neighbor and send request
 	}
 
 
@@ -138,15 +149,20 @@ public class PeerHandler {
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
 						//no payload
+						Logger.debug(4, "Peer " + peerProcess.peerID
+	                                             + " is unchoked by " + 
+	                                             peerProcess.getRPI(PeerHandler.this).peerId);
 						//TODO: send back a request message
 					}
 					else if(mType == Message.MessageType.INTERESTED) {
 						//no payload
 						//TODO: set otherPeerIsInterested to true
+						otherPeerIsInterested = true;
 					}
 					else if(mType == Message.MessageType.NOT_INTERESTED) {
 						//no payload
 						//TODO: set otherPeerIsInterested to false
+						otherPeerIsInterested = false;
 					}
 					else {
 						payload = new byte[len];
