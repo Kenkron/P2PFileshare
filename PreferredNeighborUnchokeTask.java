@@ -63,6 +63,15 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         //choke un-preferred neighbors
         for (int y = 0; y < peerList.size(); y++)
             peerProcess.rpiToPeerHandler.get(peerList.get(y)).sendChoke();
+            
+        //Log this
+        String preferredListString = preferredList.get(0).peerId;
+        for (int z = 1; z < preferredList.size(); z++)
+            preferredListString = preferredListString + ", " + 
+                                  preferredList.get(z).peerId;
+        Logger.debug(4, "Peer " + peerProcess.peerID + "has the preferred " +
+                     "neighbors " + preferredListString);
+        
      }
 
 }
