@@ -116,6 +116,35 @@ public class Logger {
 		logToFile(receivedHaveString(otherPeerID, pieceIndex));
 	}
 	
+	private static String receivedInterestedString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " received an 'interested' message from " + otherPeerID + ".\n";
+	}
+	public static void receivedInterested(int otherPeerID) {
+		logToFile(receivedInterestedString(otherPeerID));
+	}
+	
+	private static String receivedNotInterestedString(int otherPeerID) {
+		return getFormattedDate() + ": Peer " + peerID + " received a 'not interested' message from " + otherPeerID + ".\n";
+	}
+	public static void receivedNotInterested(int otherPeerID) {
+		logToFile(receivedNotInterestedString(otherPeerID));
+	}
+	
+	private static String downloadedPieceString(int otherPeerID, int pieceIndex) {
+		return getFormattedDate() + ": Peer " + peerID + " has downloaded the piece " + pieceIndex + " from " + otherPeerID + "." +
+				"Now the number of pieces it has is " + peerProcess.myCopy.getSegmentsOwnedCount() +  ".\n"; 
+	}
+	public static void downloadedPiece(int otherPeerID, int pieceIndex) {
+		logToFile(downloadedPieceString(otherPeerID, pieceIndex));
+	}
+	
+	private static String downloadCompleteString() {
+		return getFormattedDate() + ": Peer " + peerID + " has downloaded the complete file";
+	}
+	public void downloadComplete() {
+		logToFile(downloadCompleteString());
+	}
+	
 	/**Shows a debugging method.  Level indicates the detail provided in this message.
 	 * The lower the number, the more important the message is deemed*/
 	public static void debug(int level, String s){

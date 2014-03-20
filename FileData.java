@@ -21,6 +21,14 @@ public class FileData{
 	
 	/**a cached array of booleans indicating whether each segment is owned*/
 	boolean[] segmentOwned;
+	/**get the number of segments owned*/
+	int getSegmentsOwnedCount() {
+		int count = 0;
+		for(boolean x : segmentOwned) {
+			if(x) count++;
+		}
+		return count;
+	}
 	/**The client's bitfield, should be updated along with segmentOwner*/
 	volatile byte[] bitfield;
 	
@@ -32,7 +40,7 @@ public class FileData{
 		segmentOwned=new boolean[numberOfSegments];
 		int bitfieldSize = (int)(Math.ceil(((float)numberOfSegments)/8.0));
 		bitfield = new byte[bitfieldSize];
-		findExistingPartialFiles();
+		findExistingPartialFiles();//TODO: do we really need this?
 	}
 	
 	/**creates a fileData based on the given filename.
@@ -97,9 +105,6 @@ public class FileData{
 	
 	/**Updates the segmentOwned and bitfields according to any pre-existing partial files*/
 	public void findExistingPartialFiles() {
-		File outputDirectory = new File(TEMP_DIR);
-		if (!outputDirectory.exists())
-			outputDirectory.mkdir();
 		for(int part = 0;part<segmentOwned.length;part++) {
 			File partialFile = new File(TEMP_DIR+FILE_NAME+ part +TEMP_EXTENSION);
 			if(partialFile.exists()) {
