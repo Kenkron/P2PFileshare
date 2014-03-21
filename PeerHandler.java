@@ -10,12 +10,15 @@ public class PeerHandler {
 	public Socket socket = null;
 	private OutputStream oos = null;
 	private InputHandler ih = null;
+	
+	private int otherPeerID;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
 	public boolean otherPeerIsChoked = false;
 	private boolean waitingForRequestFromOtherPeer = false;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
+	
 	private boolean[] remoteSegments;
 	private byte[] otherBitfield = new byte[peerProcess.myCopy.bitfield.length];
 
@@ -32,12 +35,14 @@ public class PeerHandler {
 	}
 	
 	public void sendHandshake() {
-		byte[] handshakeBytes = new byte[32];
-		System.arraycopy(HELLO.getBytes(), 0, handshakeBytes, 0, HELLO.getBytes().length);
+		byte[] outputBytes = new byte[32];
 		byte[] peerIDBytes = ByteBuffer.allocate(4).putInt(peerProcess.peerID).array();
-		System.arraycopy(peerIDBytes, 0, handshakeBytes, 28, 4);
+		
+		System.arraycopy(HELLO.getBytes(), 0, outputBytes, 0, HELLO.getBytes().length);
+		//middle bytes already default to 0
+		System.arraycopy(peerIDBytes, 0, outputBytes, 28, 4);
 		try {
-			oos.write(handshakeBytes);
+			oos.write(outputBytes);
 		}
 		catch(IOException e) {
 			e.printStackTrace();
@@ -72,23 +77,47 @@ public class PeerHandler {
 		    }
 		    otherPeerIsChoked = false;
 	    }
-	}	
+	}
+	
+	/**Send a HAVE message
+	 * 4byte message length, 1byte HAVE ordinal, 4byte payload (pieceIndex)*/
+	public void sendHave(int pieceIndex) {
+		byte[] payloadBytes = ByteBuffer.allocate(4).putInt(pieceIndex).array();
+		byte[] msgLengthBytes = ByteBuffer.allocate(4).putInt(payloadBytes.length + 1).array();
+		byte[] outputBytes = new byte[msgLengthBytes.length + 1 + payloadBytes.length];//4 + 1 + 4
+		
+		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, 4);
+		outputBytes[4] = (byte) Message.MessageType.HAVE.ordinal();
+		System.arraycopy(payloadBytes, 0, outputBytes, 5, payloadBytes.length);
+		try {
+		    oos.write(outputBytes);
+	    }
+	    catch(IOException e) {
+	    	e.printStackTrace();
+	    }
+	}
 
+	/**Send a BITFIELD message
+	 * 4byte message length, 1byte BITFIELD ordinal, variable sized payload (myBitfield)*/
 	public void sendBitfield() {
 		boolean hasPartialFile = false;
 		byte[] myBitfield = peerProcess.myCopy.bitfield;
 		for(byte b : myBitfield) {
-			if(b != 0) hasPartialFile = true;
+			if(b != 0) {
+				hasPartialFile = true;
+				break;
+			}
 		}
 		if(hasPartialFile) {
-			int messageLength = 1 + myBitfield.length;
-			byte[] sendBitfieldMessage = new byte[messageLength + 4];
-			byte[] messageLengthBytes = ByteBuffer.allocate(4).putInt(messageLength).array();
-			System.arraycopy(messageLengthBytes, 0, sendBitfieldMessage, 0, 4);
-			sendBitfieldMessage[4] = (byte) Message.MessageType.BITFIELD.ordinal();
-			System.arraycopy(myBitfield, 0, sendBitfieldMessage, 5, myBitfield.length);
+			byte[] payloadBytes = myBitfield;
+			byte[] msgLengthBytes = ByteBuffer.allocate(4).putInt(payloadBytes.length + 1).array();
+			byte[] outputBytes = new byte[msgLengthBytes.length + 1 + payloadBytes.length];//4 + 1 + variable
+			
+			System.arraycopy(msgLengthBytes, 0, outputBytes, 0, 4);
+			outputBytes[4] = (byte) Message.MessageType.BITFIELD.ordinal();
+			System.arraycopy(myBitfield, 0, outputBytes, 5, myBitfield.length);
 			try {
-			    oos.write(sendBitfieldMessage);
+			    oos.write(outputBytes);
 		    }
 		    catch(IOException e) {
 		    	e.printStackTrace();
@@ -101,9 +130,7 @@ public class PeerHandler {
 	}
 
 
-	/**
-	 * Start the InputHandler
-	 */
+	/**Start the InputHandler*/
 	public void start() {
 		ih.start();
 	}
@@ -133,8 +160,13 @@ public class PeerHandler {
 					System.arraycopy(input, 28, payload, 0, 4);
 					int receivedPeerID = ByteBuffer.wrap(payload).getInt();
 					int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
+					otherPeerID = expectedPeerID;
 					if(receivedPeerID == expectedPeerID) {
 						Logger.debug(4, "Handshake Approved");
+						if(!sentHandshake) {
+							sendHandshake();
+						}
+						sendBitfield();
 					}
 					else {
 						Logger.debug(4, "Handshake NOT Approved");
@@ -144,7 +176,7 @@ public class PeerHandler {
 				}
 				//TODO: should we ignore a non-handshake first message? loop until a good one is found?
 				//this should probably go inside the approval section
-				if(!sentHandshake) sendHandshake();
+				
 				
 				payload = new byte[4];
 				int next=0;
@@ -152,33 +184,31 @@ public class PeerHandler {
 					//messageLength[0-3], messageType[4]
 					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" received "+next);
 					
-					int len = ByteBuffer.wrap(payload).getInt();
+					int len = ByteBuffer.wrap(payload).getInt() - 1;//1 byte is used for the type
 					int type = ois.read();
 					
 					Message.MessageType mType = Message.MessageType.values()[type];
 					//TODO: HANDLE INCOMING MESSAGES; maybe make this its own method
 					if(mType == Message.MessageType.CHOKE) {
-						//no payload
-						//TODO
 						Logger.debug(4, "Peer " + peerProcess.peerID
 	                                 + " is choked by " + 
 	                                 peerProcess.getRPI(PeerHandler.this).peerId);
+						Logger.chokedBy(otherPeerID);
+						//TODO
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
-						//no payload
 						Logger.debug(4, "Peer " + peerProcess.peerID
 	                                             + " is unchoked by " + 
 	                                             peerProcess.getRPI(PeerHandler.this).peerId);
+						Logger.chokedBy(otherPeerID);
 						//TODO: send back a request message
 					}
 					else if(mType == Message.MessageType.INTERESTED) {
-						//no payload
-						//TODO: set otherPeerIsInterested to true
+						Logger.receivedInterested(otherPeerID);
 						otherPeerIsInterested = true;
 					}
 					else if(mType == Message.MessageType.NOT_INTERESTED) {
-						//no payload
-						//TODO: set otherPeerIsInterested to false
+						Logger.receivedNotInterested(otherPeerID);
 						otherPeerIsInterested = false;
 					}
 					else {
@@ -186,6 +216,7 @@ public class PeerHandler {
 						dataRcvd += len; //Increment the data received count
 						ois.read(payload);
 						if(mType == Message.MessageType.HAVE) {
+							int pieceIndex = ByteBuffer.wrap(payload).getInt();
 							//TODO
 						}
 						else if(mType == Message.MessageType.BITFIELD) {

@@ -30,6 +30,8 @@ public class FileData{
 		return count;
 	}
 	/**The client's bitfield, should be updated along with segmentOwner*/
+	//TODO: create a static utility methods that converts boolean[] to byte[] and vice-versa
+	//Remove the updateBitfield() stuff. Reimplement in PeerHandler 
 	volatile byte[] bitfield;
 	
 	/**creates a fileData that will ultimately have the given number of segments.
