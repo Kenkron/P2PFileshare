@@ -20,7 +20,7 @@ public class PeerHandler {
 	private int dataRcvd = 0;
 	
 	private boolean[] remoteSegments;
-	private byte[] otherBitfield = new byte[peerProcess.myCopy.bitfield.length];
+	private byte[] otherBitfield = new byte[peerProcess.myCopy.getBitfield().length];
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
@@ -101,7 +101,7 @@ public class PeerHandler {
 	 * 4byte message length, 1byte BITFIELD ordinal, variable sized payload (myBitfield)*/
 	public void sendBitfield() {
 		boolean hasPartialFile = false;
-		byte[] myBitfield = peerProcess.myCopy.bitfield;
+		byte[] myBitfield = peerProcess.myCopy.getBitfield();
 		for(byte b : myBitfield) {
 			if(b != 0) {
 				hasPartialFile = true;

@@ -2,8 +2,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 
 /**and extension of {@link HashMap} that will hold segments of a byte array
@@ -29,10 +27,40 @@ public class FileData{
 		}
 		return count;
 	}
-	/**The client's bitfield, should be updated along with segmentOwner*/
-	//TODO: create a static utility methods that converts boolean[] to byte[] and vice-versa
-	//Remove the updateBitfield() stuff. Reimplement in PeerHandler 
-	volatile byte[] bitfield;
+	/**get the bitfield associated with the current segmentOwned*/
+	byte[] getBitfield() {
+		return createBitfield(segmentOwned);
+	}
+	
+	/**Converts a boolean[] array of owned segments to a byte[] array bitfield*/
+	//TODO: TEST (currently not tested)
+	public static byte[] createBitfield(boolean[] segmentOwned) {
+		int bitfieldSize = (int)(Math.ceil(((float)segmentOwned.length)/8.0));
+		byte[] bitfield = new byte[bitfieldSize];
+		int bitfieldIndex = 0;
+		for(int i = 0;i<segmentOwned.length;i+=8) {
+			boolean[] tempBool = new boolean[8];
+			System.arraycopy(segmentOwned, i, tempBool, 0, Math.min(segmentOwned.length-(i/8)*8, 8));
+			bitfield[bitfieldIndex] = boolToByte(tempBool);
+			bitfieldIndex++;
+		}
+		return bitfield;
+	}
+	
+	/**Converts a byte[] array bitfield to a boolean array of segments owned*/
+	//TODO: TEST (currently not tested)
+	public static boolean[] createSegmentsOwned(byte[] bitfield) {
+		boolean[] segmentsOwned = new boolean[bitfield.length*8];//TODO: this isn't completely accurate
+		for(int bitfieldIndex = 0;bitfieldIndex<bitfield.length;bitfieldIndex++) {
+			byte theByte = bitfield[bitfieldIndex];
+			for(int i = 7;i>=0;i--) {
+				int val = theByte % 2;
+				segmentsOwned[bitfieldIndex*8+i] = (val == 1);
+				theByte = (byte) (theByte >> 1);
+			}
+		}
+		return segmentsOwned;
+	}
 	
 	/**creates a fileData that will ultimately have the given number of segments.
 	 * Used when the file is not on this machine*/
@@ -40,9 +68,6 @@ public class FileData{
 		TEMP_DIR=tempDir;
 		FILE_NAME=filename;
 		segmentOwned=new boolean[numberOfSegments];
-		int bitfieldSize = (int)(Math.ceil(((float)numberOfSegments)/8.0));
-		bitfield = new byte[bitfieldSize];
-		findExistingPartialFiles();//TODO: do we really need this?
 	}
 	
 	/**creates a fileData based on the given filename.
@@ -62,8 +87,6 @@ public class FileData{
 		FileInputStream input=new FileInputStream(inputFile);
 		int numOfParts=(int) Math.ceil(inputFile.length()/(float)segmentSize);
 		segmentOwned=new boolean[numOfParts];
-		int bitfieldSize = (int)(Math.ceil(((float)numOfParts)/8.0));
-		bitfield = new byte[bitfieldSize];
 		int partCounter=0;
 		while (input.available()>0){
 			byte[] nextData=new byte[Math.min(segmentSize,input.available())];
@@ -74,29 +97,11 @@ public class FileData{
 		for (int i = 0; i< segmentOwned.length; i++){
 			segmentOwned[i]=true;
 		}
-		updateBitfield();
+		input.close();
 	}
 	
-	/**Set segmentOwned and automatically calculates the new bitfield*/
-	private void updateSegment(int i, boolean val) {
-		segmentOwned[i] = val;
-		int bitfieldIndex = i/8;
-		boolean[] tempBool = new boolean[8];
-		System.arraycopy(segmentOwned, (i/8)*8, tempBool, 0, Math.min(segmentOwned.length-(i/8)*8, 8));
-		bitfield[bitfieldIndex] = boolToByte(tempBool);
-	}
-	/**Updates bitfield to match segmentOwned. Call after finished updating segments*/
-	private void updateBitfield() {
-		int index = 0;
-		for(int i = 0;i<segmentOwned.length;i+=8) {
-			boolean[] tempBool = new boolean[8];
-			System.arraycopy(segmentOwned, i, tempBool, 0, Math.min(segmentOwned.length-(i/8)*8, 8));
-			bitfield[index] = boolToByte(tempBool);
-			index++;
-		}
-	}
-	/**Converts a boolean array (expected length [0,8]) to a byte)*/
-	private byte boolToByte(boolean[] arr) {
+	/**Converts a boolean array (expected length [0,8]) to a byte*/
+	private static byte boolToByte(boolean[] arr) {
 		byte val = 0;
 		for(boolean x : arr) {
 			val = (byte) (val << 1);
@@ -105,6 +110,7 @@ public class FileData{
 		return val;
 	}
 	
+	//TODO: Remove? since it's not necessary?
 	/**Updates the segmentOwned and bitfields according to any pre-existing partial files*/
 	public void findExistingPartialFiles() {
 		for(int part = 0;part<segmentOwned.length;part++) {
@@ -112,7 +118,6 @@ public class FileData{
 			if(partialFile.exists()) {
 				segmentOwned[part] = true;
 			}
-			updateBitfield();
 		}
 	}
 	
@@ -127,8 +132,7 @@ public class FileData{
 		FileOutputStream output = new FileOutputStream(outputFile);
 		output.write(data);
 		output.close();
-		//segmentOwned[part]=true;
-		updateSegment(part, true);
+		segmentOwned[part]=true;
 	}
 	
 	/**gets a part of a file*/
