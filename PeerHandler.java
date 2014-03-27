@@ -7,6 +7,13 @@ import java.nio.ByteBuffer;
 public class PeerHandler {
 	private static final String HELLO = "HELLO";
 	
+	/**The number of bytes used to store an int*/
+	public static final int INT_LENGTH=4;
+	/**The number of bytes for the message type declaration*/
+	public static final int TYPE_LENGTH=1;
+	/**The number of bytes in the handshake message*/
+	public static final int HANDSHAKE_LENGTH=32;
+	
 	public Socket socket = null;
 	private OutputStream oos = null;
 	private InputHandler ih = null;
@@ -36,11 +43,11 @@ public class PeerHandler {
 	
 	public void sendHandshake() {
 		byte[] outputBytes = new byte[32];
-		byte[] peerIDBytes = ByteBuffer.allocate(4).putInt(peerProcess.peerID).array();
+		byte[] peerIDBytes = ByteBuffer.allocate(INT_LENGTH).putInt(peerProcess.peerID).array();
 		
 		System.arraycopy(HELLO.getBytes(), 0, outputBytes, 0, HELLO.getBytes().length);
 		//middle bytes already default to 0
-		System.arraycopy(peerIDBytes, 0, outputBytes, 28, 4);
+		System.arraycopy(peerIDBytes, 0, outputBytes, 28, INT_LENGTH);
 		try {
 			oos.write(outputBytes);
 		}
@@ -82,11 +89,11 @@ public class PeerHandler {
 	/**Send a HAVE message
 	 * 4byte message length, 1byte HAVE ordinal, 4byte payload (pieceIndex)*/
 	public void sendHave(int pieceIndex) {
-		byte[] payloadBytes = ByteBuffer.allocate(4).putInt(pieceIndex).array();
-		byte[] msgLengthBytes = ByteBuffer.allocate(4).putInt(payloadBytes.length + 1).array();
+		byte[] payloadBytes = ByteBuffer.allocate(INT_LENGTH).putInt(pieceIndex).array();
+		byte[] msgLengthBytes = ByteBuffer.allocate(INT_LENGTH).putInt(payloadBytes.length + 1).array();
 		byte[] outputBytes = new byte[msgLengthBytes.length + 1 + payloadBytes.length];//4 + 1 + 4
 		
-		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, 4);
+		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
 		outputBytes[4] = (byte) Message.MessageType.HAVE.ordinal();
 		System.arraycopy(payloadBytes, 0, outputBytes, 5, payloadBytes.length);
 		try {
@@ -111,11 +118,11 @@ public class PeerHandler {
 		if(hasPartialFile) {
 			byte[] payloadBytes = myBitfield;
 			byte[] msgLengthBytes = ByteBuffer.allocate(4).putInt(payloadBytes.length + 1).array();
-			byte[] outputBytes = new byte[msgLengthBytes.length + 1 + payloadBytes.length];//4 + 1 + variable
+			byte[] outputBytes = new byte[msgLengthBytes.length + TYPE_LENGTH + payloadBytes.length];//4 + 1 + variable
 			
-			System.arraycopy(msgLengthBytes, 0, outputBytes, 0, 4);
+			System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
 			outputBytes[4] = (byte) Message.MessageType.BITFIELD.ordinal();
-			System.arraycopy(myBitfield, 0, outputBytes, 5, myBitfield.length);
+			System.arraycopy(myBitfield, 0, outputBytes, INT_LENGTH + TYPE_LENGTH, myBitfield.length);
 			try {
 			    oos.write(outputBytes);
 		    }
@@ -149,15 +156,15 @@ public class PeerHandler {
 
 		@Override
 		public void run() {
-			byte[] input = new byte[32];
-			byte[] payload = new byte[4];
+			byte[] input = new byte[HANDSHAKE_LENGTH];
+			byte[] payload = new byte[INT_LENGTH];
 			try {
 				//listen for handshake:
 				ois.read(input, 0, 32);
 				//test handshake
-				Logger.debug(4, "Received handshake message: " + new String(input, 0, 32));
-				if(new String(input, 0, 5).equals(HELLO)) {
-					System.arraycopy(input, 28, payload, 0, 4);
+				Logger.debug(4, "Received handshake message: " + new String(input, 0, HELLO.length()));
+				if(new String(input, 0, HELLO.length()).equals(HELLO)) {
+					System.arraycopy(input, input.length-HELLO.length(), payload, 0, 4);
 					int receivedPeerID = ByteBuffer.wrap(payload).getInt();
 					int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
 					otherPeerID = expectedPeerID;

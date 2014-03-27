@@ -12,6 +12,16 @@ public class Logger {
 	/**The Level of Detail to provide while debugging*/
 	public static int debugLevel=4;
 	
+	/**used for debugging things that only happen once in program execution*/
+	public static final int DEBUG_ONCE=1;
+	/**used for logging things that are written to the log file.
+	 * NOTICE: THIS DOES NOT ENSURE THAT THEY ARE IN THE LOG FILE,
+	 * IT'S JUST A DEBUG LEVEL FOR LOGGED THINGS TO USE.*/
+	public static final int DEBUG_LOGFILE=3;
+	/**Standard level for logging.  Considered less 
+	 * significant than log file data.*/
+	public static final int DEBUG_STANDARD=4;
+	
 	public static void setupLogger(int newPeerID) {
 		peerID = newPeerID;
 		try {
