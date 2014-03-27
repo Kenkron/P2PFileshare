@@ -12,8 +12,7 @@ public class OptimisticUnchokeTask extends TimerTask {
      * from a list of all unchoked, but interested neighbors */
     public void run() {
         //The peerList below is initialized to all peers
-        ArrayList<RemotePeerInfo> peerList = null;
-        Collections.copy(peerList, peerProcess.peerList);
+        ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>(peerProcess.peerList);
         //The empty preferred list below will contain the possible neighbors
         //to choose from later
         ArrayList<RemotePeerInfo> possibleList = new ArrayList<RemotePeerInfo>();
@@ -21,14 +20,14 @@ public class OptimisticUnchokeTask extends TimerTask {
         //first check if we only have one peer
         if (peerList.size() <= 1) {
             //if so, just make everyone a preferred neighbor
-            Collections.copy(possibleList, peerList);
+        	possibleList = new ArrayList<RemotePeerInfo>(peerList);
             //now clear the list of "un-preferred" neighbors
             peerList.clear();
         }
         
         //otherwise, choose randomly for one
         else {
-              //go through each peer to see how if it can be added to possibile
+              //go through each peer to see how if it can be added to possible
               for (RemotePeerInfo rpi : peerProcess.peerList) {
                   PeerHandler peer = peerProcess.rpiToPeerHandler.get(rpi);
                   if (peer != null && peer.otherPeerIsInterested
@@ -42,6 +41,9 @@ public class OptimisticUnchokeTask extends TimerTask {
         RemotePeerInfo choice = possibleList.get(randomIndex);
         
         //TODO: unchoke choice
+        //TODO: rpiToPeerHandler currently can return a null, because the keys are prepopulated
+        //what we really care about are the peers that are currently connected.
+        //ask Kyle about this when needed, to see if it gets changed.
         peerProcess.rpiToPeerHandler.get(choice).sendUnchoke();
     }
 }
