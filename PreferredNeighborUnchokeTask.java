@@ -1,6 +1,5 @@
 import java.util.TimerTask;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class PreferredNeighborUnchokeTask extends TimerTask {
 
@@ -15,8 +14,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
      public void run() {
         //The peerList below is initialized to all peers, but after this method
         //runs, it will contain "un-preferred" neighbors
-        ArrayList<RemotePeerInfo> peerList = null;
-        Collections.copy(peerList, peerProcess.peerList);
+        ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>(peerProcess.peerList);
         //The empty preferred list below will contain the preferred neighbors 
         //after this method is executed. 
         ArrayList<RemotePeerInfo> preferredList = new ArrayList<RemotePeerInfo>();
@@ -24,7 +22,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         //first check if we have less peers than # of allowable preferred neighbors
         if (peerList.size() <= peerProcess.NumberOfPreferredNeighbors) {
             //if so, just make everyone a preferred neighbor
-            Collections.copy(preferredList, peerList);
+        	preferredList = new ArrayList<RemotePeerInfo>(peerList);
             //now clear the list of "un-preferred" neighbors
             peerList.clear();
         }
@@ -70,8 +68,6 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
             preferredListString = preferredListString + ", " + 
                                   preferredList.get(z).peerId;
         Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID + "has the preferred " +
-                     "neighbors " + preferredListString);
-        
+                     "neighbors " + preferredListString);  
      }
-
 }
