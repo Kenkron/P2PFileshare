@@ -78,7 +78,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         for (int z = 1; z < preferredList.size(); z++)
             preferredListString = preferredListString + ", " + 
                                   preferredList.get(z).peerId;
-        Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID + "has the preferred " +
+        Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID + " has the preferred " +
                      "neighbors " + preferredListString);  
      }
 }
