@@ -27,11 +27,11 @@ public class peerProcess {
 	/**the preferred number of active piers given by Common.cfg. Defaults to 2.*/
 	public static int NumberOfPreferredNeighbors=2;
 	/**the delay (in milliseconds) between preferred neighbor unchoking.
-	 * given by Common.cfg.  Defaults to 1.*/
-	public static int UnchokingInterval=1;
+	 * given by Common.cfg.  Defaults to 100.*/
+	public static int UnchokingInterval=100;
 	/**the delay (in milliseconds) between switching out the optimistically-unchoked neighbor
-	 * given by Common.cfg.  Defaults to 1.*/
-	public static int OptimisticUnchokingInterval=1;
+	 * given by Common.cfg.  Defaults to 100.*/
+	public static int OptimisticUnchokingInterval=100;
 	/**the name of the file for transmission. given by Common.cfg*/
 	public static String FileName=null;
 	/**the size of the file for transmission. given by Common.cfg*/
@@ -117,9 +117,9 @@ public class peerProcess {
 				if (name.equals("NumberOfPreferredNeighbors")){
 					NumberOfPreferredNeighbors=Integer.parseInt(value);
 				} else if (name.equals("UnchokingInterval")){
-					UnchokingInterval=Integer.parseInt(value);
+					UnchokingInterval=Integer.parseInt(value)*1000;
 				} else if (name.equals("OptimisticUnchokingInterval")){
-					OptimisticUnchokingInterval=Integer.parseInt(value);
+					OptimisticUnchokingInterval=Integer.parseInt(value)*1000;
 				} else if (name.equals("FileName")){
 					FileName=value;
 				} else if (name.equals("FileSize")){
