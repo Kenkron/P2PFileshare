@@ -14,7 +14,18 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
      public void run() {
         //The peerList below is initialized to all peers, but after this method
         //runs, it will contain "un-preferred" neighbors
-        ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>(peerProcess.peerList);
+        ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
+        
+        //TODO: this was a quick fix.  
+        //... It should be peer reviewed to ensure that it is good code.
+        for (PeerHandler handle: peerProcess.peerHandlerList){
+        	peerList.add(peerProcess.getRPI(handle));
+        }
+        
+        if (peerList.isEmpty()){
+        	return;
+        }
+        
         //The empty preferred list below will contain the preferred neighbors 
         //after this method is executed. 
         ArrayList<RemotePeerInfo> preferredList = new ArrayList<RemotePeerInfo>();
