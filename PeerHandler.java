@@ -27,11 +27,14 @@ public class PeerHandler {
 	private int dataRcvd = 0;
 	
 	private boolean[] remoteSegments;
-	private byte[] otherBitfield = new byte[peerProcess.myCopy.getBitfield().length];
+	//this might be unnecessary
+	private byte[] getBitfield() {
+		return FileData.createBitfield(remoteSegments);
+	}
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
-		//@ TODO: remoteSegments=new boolean[FileData.length];
+		remoteSegments = new boolean[peerProcess.myCopy.segmentOwned.length];
 		try {
 			oos = s.getOutputStream();
 			ih = new InputHandler(s);
@@ -224,11 +227,15 @@ public class PeerHandler {
 						ois.read(payload);
 						if(mType == Message.MessageType.HAVE) {
 							int pieceIndex = ByteBuffer.wrap(payload).getInt();
-							//TODO
+							remoteSegments[pieceIndex] = true;
+							//TODO: do we need to request this new piece?
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
 							//Note: this should not go before while loop because a bitfield message doesn't need to be sent
-							otherBitfield = payload;
+							//get bitfield, convert to segmentsOwned
+							boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
+							//cut the segmentOwned to the appropriate size
+							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
 						}
 						else if(mType == Message.MessageType.REQUEST) {
 							//TODO

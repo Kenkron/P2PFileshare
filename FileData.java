@@ -47,10 +47,11 @@ public class FileData{
 		return bitfield;
 	}
 	
-	/**Converts a byte[] array bitfield to a boolean array of segments owned*/
+	/**Converts a byte[] array bitfield to a boolean array of segments owned.
+	 * Note: returned boolean[] array size is a multiple of 8. May be larger than appropriate*/
 	//TODO: TEST (currently not tested)
 	public static boolean[] createSegmentsOwned(byte[] bitfield) {
-		boolean[] segmentsOwned = new boolean[bitfield.length*8];//TODO: this isn't completely accurate
+		boolean[] segmentsOwned = new boolean[bitfield.length*8];
 		for(int bitfieldIndex = 0;bitfieldIndex<bitfield.length;bitfieldIndex++) {
 			byte theByte = bitfield[bitfieldIndex];
 			for(int i = 7;i>=0;i--) {
