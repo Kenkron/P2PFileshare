@@ -27,7 +27,7 @@ public class Server implements Runnable {
 		while(true) {
 			try {
 				Socket s = serverSocket.accept();
-				Logger.debug(4, "Server: recieved a connection");
+				Logger.debug(Logger.DEBUG_STANDARD, "Server: recieved a connection");
 
 				PeerHandler ph = new PeerHandler(s);
 				if(peerProcess.addPeerHandlerToList(ph)) {
@@ -42,9 +42,9 @@ public class Server implements Runnable {
 					}
 					otherPeerID = peerProcess.getRPI(ph).peerId;
 					Logger.connectedFrom(Integer.valueOf(otherPeerID));
-					Logger.debug(4,"Server: Connection From "+otherPeerID);
+					Logger.debug(Logger.DEBUG_STANDARD,"Server: Connection From "+otherPeerID);
 				} else {
-					Logger.debug(4,"Server: connection rejected");
+					Logger.debug(Logger.DEBUG_STANDARD,"Server: connection rejected");
 				}
 			}
 			catch(IOException e) {
