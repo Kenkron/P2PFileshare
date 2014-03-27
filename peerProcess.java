@@ -66,7 +66,7 @@ public class peerProcess {
 			System.exit(1);
 		}
 		
-		Logger.debug(1, "Config Files Loaded");
+		Logger.debug(Logger.DEBUG_ONCE, "Config Files Loaded");
 		
 		readPeerInfo();
 		
@@ -191,7 +191,7 @@ public class peerProcess {
 				//can't create the socket (peer hasn't been started probably), don't print anything
 			}
 		}
-		Logger.debug(1, "Initial Peers Found: "+peerHandlerList.size());
+		Logger.debug(Logger.DEBUG_ONCE, "Initial Peers Found: "+peerHandlerList.size());
 	}
 	
 	/**

@@ -13,6 +13,9 @@ public class PeerHandler {
 	public static final int TYPE_LENGTH=1;
 	/**The number of bytes in the handshake message*/
 	public static final int HANDSHAKE_LENGTH=32;
+	/**The offset for the start of a message, accounting for the
+	 * length int, and type length*/
+	public static final int PAYLOAD_OFFSET=INT_LENGTH+TYPE_LENGTH;
 	
 	public Socket socket = null;
 	private OutputStream oos = null;
@@ -45,12 +48,12 @@ public class PeerHandler {
 	}
 	
 	public void sendHandshake() {
-		byte[] outputBytes = new byte[32];
+		byte[] outputBytes = new byte[HANDSHAKE_LENGTH];
 		byte[] peerIDBytes = ByteBuffer.allocate(INT_LENGTH).putInt(peerProcess.peerID).array();
 		
 		System.arraycopy(HELLO.getBytes(), 0, outputBytes, 0, HELLO.getBytes().length);
 		//middle bytes already default to 0
-		System.arraycopy(peerIDBytes, 0, outputBytes, 28, INT_LENGTH);
+		System.arraycopy(peerIDBytes, 0, outputBytes, HANDSHAKE_LENGTH-INT_LENGTH, INT_LENGTH);
 		try {
 			oos.write(outputBytes);
 		}
@@ -61,9 +64,9 @@ public class PeerHandler {
 	}
 	
 	public void sendChoke() {
-	    byte[] chokeBytes = new byte[5];
-	    chokeBytes[3] = (byte) 1;//set message length to 1
-        chokeBytes[4] = (byte) Message.MessageType.CHOKE.ordinal(); 
+	    byte[] chokeBytes = new byte[PAYLOAD_OFFSET];
+	    chokeBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+        chokeBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.CHOKE.ordinal(); 
 		try {
 			oos.write(chokeBytes);
 		}
@@ -76,9 +79,9 @@ public class PeerHandler {
 	
 	public void sendUnchoke() {
 	    if (otherPeerIsChoked) {
-	        byte[] unchokeBytes = new byte[5];
-	        unchokeBytes[3] = (byte) 1;//set message length to 1
-            unchokeBytes[4] = (byte) Message.MessageType.UNCHOKE.ordinal(); 
+	        byte[] unchokeBytes = new byte[PAYLOAD_OFFSET];
+	        unchokeBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+            unchokeBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.UNCHOKE.ordinal(); 
 		    try {
 			    oos.write(unchokeBytes);
 		    }
@@ -93,12 +96,12 @@ public class PeerHandler {
 	 * 4byte message length, 1byte HAVE ordinal, 4byte payload (pieceIndex)*/
 	public void sendHave(int pieceIndex) {
 		byte[] payloadBytes = ByteBuffer.allocate(INT_LENGTH).putInt(pieceIndex).array();
-		byte[] msgLengthBytes = ByteBuffer.allocate(INT_LENGTH).putInt(payloadBytes.length + 1).array();
-		byte[] outputBytes = new byte[msgLengthBytes.length + 1 + payloadBytes.length];//4 + 1 + 4
+		byte[] msgLengthBytes = ByteBuffer.allocate(INT_LENGTH).putInt(payloadBytes.length + TYPE_LENGTH).array();
+		byte[] outputBytes = new byte[msgLengthBytes.length + TYPE_LENGTH + payloadBytes.length];//4 + 1 + 4
 		
 		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
-		outputBytes[4] = (byte) Message.MessageType.HAVE.ordinal();
-		System.arraycopy(payloadBytes, 0, outputBytes, 5, payloadBytes.length);
+		outputBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.HAVE.ordinal();
+		System.arraycopy(payloadBytes, 0, outputBytes, PAYLOAD_OFFSET, payloadBytes.length);
 		try {
 		    oos.write(outputBytes);
 	    }
@@ -120,12 +123,12 @@ public class PeerHandler {
 		}
 		if(hasPartialFile) {
 			byte[] payloadBytes = myBitfield;
-			byte[] msgLengthBytes = ByteBuffer.allocate(4).putInt(payloadBytes.length + 1).array();
+			byte[] msgLengthBytes = ByteBuffer.allocate(INT_LENGTH).putInt(payloadBytes.length + TYPE_LENGTH).array();
 			byte[] outputBytes = new byte[msgLengthBytes.length + TYPE_LENGTH + payloadBytes.length];//4 + 1 + variable
 			
 			System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
-			outputBytes[4] = (byte) Message.MessageType.BITFIELD.ordinal();
-			System.arraycopy(myBitfield, 0, outputBytes, INT_LENGTH + TYPE_LENGTH, myBitfield.length);
+			outputBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.BITFIELD.ordinal();
+			System.arraycopy(myBitfield, 0, outputBytes, PAYLOAD_OFFSET, myBitfield.length);
 			try {
 			    oos.write(outputBytes);
 		    }
@@ -163,23 +166,23 @@ public class PeerHandler {
 			byte[] payload = new byte[INT_LENGTH];
 			try {
 				//listen for handshake:
-				ois.read(input, 0, 32);
+				ois.read(input, 0, HANDSHAKE_LENGTH);
 				//test handshake
-				Logger.debug(4, "Received handshake message: " + new String(input, 0, HELLO.length()));
+				Logger.debug(Logger.DEBUG_STANDARD, "Received handshake message: " + new String(input, 0, HELLO.length()));
 				if(new String(input, 0, HELLO.length()).equals(HELLO)) {
-					System.arraycopy(input, input.length-HELLO.length(), payload, 0, 4);
+					System.arraycopy(input, input.length-INT_LENGTH, payload, 0, INT_LENGTH);
 					int receivedPeerID = ByteBuffer.wrap(payload).getInt();
 					int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
 					otherPeerID = expectedPeerID;
 					if(receivedPeerID == expectedPeerID) {
-						Logger.debug(4, "Handshake Approved");
+						Logger.debug(Logger.DEBUG_STANDARD, "Handshake Approved");
 						if(!sentHandshake) {
 							sendHandshake();
 						}
 						sendBitfield();
 					}
 					else {
-						Logger.debug(4, "Handshake NOT Approved");
+						Logger.debug(Logger.DEBUG_STANDARD, "Handshake NOT Approved");
 						//TODO: what do we do if the expected peerID is not the received peerID?
 						//exception? loop until expected is received? resend handshake?
 					}
@@ -188,26 +191,26 @@ public class PeerHandler {
 				//this should probably go inside the approval section
 				
 				
-				payload = new byte[4];
+				payload = new byte[INT_LENGTH];
 				int next=0;
-				while((next = ois.read(payload, 0, 4)) >=0) {
+				while((next = ois.read(payload, 0, payload.length)) >=0) {
 					//messageLength[0-3], messageType[4]
-					Logger.debug(4, "PeerHandler: port "+socket.getPort()+" received "+next);
+					Logger.debug(Logger.DEBUG_STANDARD, "PeerHandler: port "+socket.getPort()+" received "+next);
 					
-					int len = ByteBuffer.wrap(payload).getInt() - 1;//1 byte is used for the type
+					int len = ByteBuffer.wrap(payload).getInt() - TYPE_LENGTH;//1 byte is used for the type
 					int type = ois.read();
 					
 					Message.MessageType mType = Message.MessageType.values()[type];
 					//TODO: HANDLE INCOMING MESSAGES; maybe make this its own method
 					if(mType == Message.MessageType.CHOKE) {
-						Logger.debug(4, "Peer " + peerProcess.peerID
+						Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
 	                                 + " is choked by " + 
 	                                 peerProcess.getRPI(PeerHandler.this).peerId);
 						Logger.chokedBy(otherPeerID);
 						//TODO
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
-						Logger.debug(4, "Peer " + peerProcess.peerID
+						Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
 	                                             + " is unchoked by " + 
 	                                             peerProcess.getRPI(PeerHandler.this).peerId);
 						Logger.chokedBy(otherPeerID);

@@ -1,18 +1,29 @@
+import java.util.Random;
 import java.util.TimerTask;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class OptimisticUnchokeTask extends TimerTask {
 
-    public OptimisticUnchokeTask() {
-    }
+	private static Random randomizer=new Random((long)(Math.random()*Integer.MAX_VALUE));
     
      /** This method is called by peerProcess according to a given
      * interval. This method will find 1 optimistic neighbor randomly
      * from a list of all unchoked, but interested neighbors */
     public void run() {
+    	
         //The peerList below is initialized to all peers
-        ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>(peerProcess.peerList);
+        ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
+        
+        //TODO: this was a quick fix.  
+        //... It should be peer reviewed to ensure that it is good code.
+        for (PeerHandler handle: peerProcess.peerHandlerList){
+        	peerList.add(peerProcess.getRPI(handle));
+        }
+        
+        if (peerList.isEmpty()){
+        	return;
+        }
+        
         //The empty preferred list below will contain the possible neighbors
         //to choose from later
         ArrayList<RemotePeerInfo> possibleList = new ArrayList<RemotePeerInfo>();
@@ -37,7 +48,7 @@ public class OptimisticUnchokeTask extends TimerTask {
               }
         }
         
-        int randomIndex = (int) Math.random() * ( possibleList.size() - 0 );
+        int randomIndex = randomizer.nextInt(possibleList.size());
         RemotePeerInfo choice = possibleList.get(randomIndex);
         
         //TODO: unchoke choice
