@@ -369,7 +369,11 @@ public class PeerHandler {
 							//get bitfield, convert to segmentsOwned
 							boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
 							//cut the segmentOwned to the appropriate size
-							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);				
+							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
+							String logString="recieved bitfield";
+							for (boolean bool : remoteSegments)
+								logString+=", "+Boolean.toString(bool);
+							Logger.debug(Logger.DEBUG_STANDARD,logString);			
 							//We now send an interested (or uninterested) message
 							decideInterest();
 						}
