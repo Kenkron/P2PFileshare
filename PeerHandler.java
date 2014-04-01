@@ -160,8 +160,9 @@ public class PeerHandler {
 			//Check that we dont have this segment, they do, and it hasn't been requested yet
 			if (remoteSegments[i] && 
 				!peerProcess.myCopy.segmentOwned[i] &&
-				!peerProcess.currentlyRequestedPieces.contains(new Integer(i)));
-				weDontTheyDo.add(i);
+				!peerProcess.currentlyRequestedPieces.contains(new Integer(i))) {
+					weDontTheyDo.add(i);
+			}
 		}
 		
 		//If the list is empty (no segments they have that we don't), just stop
