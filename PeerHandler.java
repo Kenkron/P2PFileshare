@@ -141,6 +141,10 @@ public class PeerHandler {
 	public void sendRequest() {
 	    //TODO: determine random piece you need from neighbor and send request
 	}
+	
+	public void sendPiece(int pieceIndex) {
+		//TODO
+	}
 
 
 	/**Start the InputHandler*/
@@ -231,6 +235,7 @@ public class PeerHandler {
 						if(mType == Message.MessageType.HAVE) {
 							int pieceIndex = ByteBuffer.wrap(payload).getInt();
 							remoteSegments[pieceIndex] = true;
+							//TODO: determine whether to send an INTERESTED or NOT_INTERESTED
 							//TODO: do we need to request this new piece?
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
@@ -239,12 +244,31 @@ public class PeerHandler {
 							boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
 							//cut the segmentOwned to the appropriate size
 							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
+							//TODO: determine whether to send an INTERESTED or NOT_INTERESTED
+							
 						}
 						else if(mType == Message.MessageType.REQUEST) {
-							//TODO
+							int pieceIndex = ByteBuffer.wrap(payload).getInt();
+							if(!otherPeerIsChoked) {
+								sendPiece(pieceIndex);
+							}
+							else {
+								//TODO: add the requested piece to a variable to 
+							}
 						}
 						else if(mType == Message.MessageType.PIECE) {
-							//TODO
+							//TODO: review correctness
+							byte[] pieceID = new byte[INT_LENGTH];
+							byte[] piece = new byte[payload.length - INT_LENGTH];
+							System.arraycopy(payload, 0, pieceID, 0, INT_LENGTH);
+							System.arraycopy(payload, 0, piece, INT_LENGTH, payload.length-INT_LENGTH);
+							int pieceIndex = ByteBuffer.wrap(pieceID).getInt();
+							peerProcess.myCopy.addPart(pieceIndex, piece);
+							if(peerProcess.myCopy.isComplete()) {
+								peerProcess.myCopy.writeFinalFile();
+							}
+							//TODO: determine whether to send NOT_INTERESTED to other peers
+							//TODO: determine whether to REQUEST another piece from this peer
 						}
 					}
 				}
