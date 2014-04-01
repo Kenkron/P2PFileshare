@@ -31,6 +31,8 @@ public class PeerHandler {
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
 	
+	public boolean weAreChoked=true;
+	
 	private boolean[] remoteSegments;
 	//this might be unnecessary 
 	private byte[] getBitfield() {
@@ -317,13 +319,15 @@ public class PeerHandler {
 	                                 + " is choked by " + 
 	                                 peerProcess.getRPI(PeerHandler.this).peerId);
 						Logger.chokedBy(otherPeerID);
-						//TODO
+						weAreChoked=true;
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
 						Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
 	                                             + " is unchoked by " + 
 	                                             peerProcess.getRPI(PeerHandler.this).peerId);
 						Logger.chokedBy(otherPeerID);
+						Logger.unchokedBy(otherPeerID);
+						weAreChoked=false;
 						//Send back a request message
 						sendRequest();
 					}
