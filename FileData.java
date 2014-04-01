@@ -55,7 +55,7 @@ public class FileData{
 		for(int bitfieldIndex = 0;bitfieldIndex<bitfield.length;bitfieldIndex++) {
 			byte theByte = bitfield[bitfieldIndex];
 			for(int i = 7;i>=0;i--) {
-				int val = theByte % 2;
+				int val = Math.abs(theByte % 2);
 				segmentsOwned[bitfieldIndex*8+i] = (val == 1);
 				theByte = (byte) (theByte >> 1);
 			}
