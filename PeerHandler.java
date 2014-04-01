@@ -349,7 +349,6 @@ public class PeerHandler {
 							//TODO: do we need to request this new piece? (I don't think so... - Sachit)
 							//We need to send an interested (or uninterested) message
 							decideInterest();
-							//TODO: do we need to request this new piece?
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
 							//Note: this should not go before while loop because a bitfield message doesn't need to be sent
