@@ -3,6 +3,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Random;
+import java.util.ArrayList;
 
 public class PeerHandler {
 	private static final String HELLO = "HELLO";
@@ -30,7 +32,7 @@ public class PeerHandler {
 	private int dataRcvd = 0;
 	
 	private boolean[] remoteSegments;
-	//this might be unnecessary
+	//this might be unnecessary 
 	private byte[] getBitfield() {
 		return FileData.createBitfield(remoteSegments);
 	}
@@ -138,8 +140,43 @@ public class PeerHandler {
 		}
 	}
 	
+	/**Send a REQUEST message (code 6)
+	 * 4byte message length, 1byte type, 4 byte payload (myBitfield)*/
 	public void sendRequest() {
-	    //TODO: determine random piece you need from neighbor and send request
+		//An oddly named array which contains indices of segments we don't
+		//have and they do
+		ArrayList<Integer> weDontTheyDo = new ArrayList<Integer>();
+		Random randomizer=new Random((long)(Math.random()*Integer.MAX_VALUE));
+		
+		//First we select a random piece we don't have and they do have
+		for (int i = 0; i < remoteSegments.length; i++) {
+			//Check that we dont have this segment and they do
+			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+				weDontTheyDo.add(i);
+		}
+		
+		//If the list is empty (no segments they have that we don't), just stop
+		if (weDontTheyDo.size() == 0)
+			return;
+			
+		//Choose randomly from the segments we own and they do
+		int randomIndex = randomizer.nextInt(weDontTheyDo.size());
+        int choice = weDontTheyDo.get(randomIndex);
+		
+		//Now send the actual message
+		byte[] payloadBytes = ByteBuffer.allocate(INT_LENGTH).putInt(choice).array();
+		byte[] msgLengthBytes = ByteBuffer.allocate(INT_LENGTH).putInt(payloadBytes.length + TYPE_LENGTH).array();
+		byte[] outputBytes = new byte[msgLengthBytes.length + TYPE_LENGTH + payloadBytes.length];//4 + 1 + 4
+		
+		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
+		outputBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.REQUEST.ordinal();
+		System.arraycopy(payloadBytes, 0, outputBytes, PAYLOAD_OFFSET, payloadBytes.length);
+		try {
+		    oos.write(outputBytes);
+	    }
+	    catch(IOException e) {
+	    	e.printStackTrace();
+	    }
 	}
 	
 	public void sendPiece(int pieceIndex) {
