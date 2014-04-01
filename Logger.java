@@ -62,7 +62,7 @@ public class Logger {
 			writer = new BufferedWriter(fileWriter);
 			writer.write(s);
 			writer.close();
-			debug(3,s);
+			debug(DEBUG_LOGFILE,s);
 		}
 		catch(IOException e) {
 			e.printStackTrace();

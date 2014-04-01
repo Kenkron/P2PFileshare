@@ -64,6 +64,7 @@ public class PeerHandler {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
+		Logger.debug(Logger.DEBUG_ONCE, "Handshake Sent");
 		sentHandshake = true;
 	}
 	
@@ -77,8 +78,8 @@ public class PeerHandler {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
+		Logger.debug(Logger.DEBUG_STANDARD, "Choking " + otherPeerID);
 	    this.otherPeerIsChoked = true;
-	    
 	}
 	
 	public void sendUnchoke() {
@@ -92,6 +93,7 @@ public class PeerHandler {
 		    catch(IOException e) {
 		    	e.printStackTrace();
 		    }
+		    Logger.debug(Logger.DEBUG_STANDARD, "Unchoking " + otherPeerID);
 		    otherPeerIsChoked = false;
 	    }
 	}
@@ -112,6 +114,7 @@ public class PeerHandler {
 	    catch(IOException e) {
 	    	e.printStackTrace();
 	    }
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent HAVE " + pieceIndex + " to " + otherPeerID);
 	}
 
 	/**Send a BITFIELD message
@@ -140,6 +143,8 @@ public class PeerHandler {
 		    	e.printStackTrace();
 		    }
 		}
+		
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent BITFIELD to " + otherPeerID);
 	}
 	
 	/**Send a REQUEST message (code 6)
@@ -181,6 +186,8 @@ public class PeerHandler {
 	    catch(IOException e) {
 	    	e.printStackTrace();
 	    }
+		
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent REQUEST for " + choice + " to " + otherPeerID);
 	}
 	
 	/**This method has the job of deciding whether or not to send an interested
@@ -216,6 +223,24 @@ public class PeerHandler {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
+		
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent INTERESTED to " + otherPeerID);
+	}
+	
+
+    /**Send a NOTINTERESTED message (code 3)
+	 * 4byte message length, 1byte type*/
+	public void sendNotInterested() {
+	    byte[] notInterestedBytes = new byte[PAYLOAD_OFFSET];
+	    notInterestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+        notInterestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.NOT_INTERESTED.ordinal(); 
+		try {
+			oos.write(notInterestedBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent NOT_INTERESTED to " + otherPeerID);
 	}
 
 	public void sendPiece(int pieceIndex) {
@@ -239,20 +264,6 @@ public class PeerHandler {
 			oos.flush();
 		} catch (IOException e) {
 			System.err.println("could not send piece "+pieceIndex);
-			e.printStackTrace();
-		}
-	}
-
-    /**Send a NOTINTERESTED message (code 3)
-	 * 4byte message length, 1byte type*/
-	public void sendNotInterested() {
-	    byte[] notInterestedBytes = new byte[PAYLOAD_OFFSET];
-	    notInterestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
-        notInterestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.NOT_INTERESTED.ordinal(); 
-		try {
-			oos.write(notInterestedBytes);
-		}
-		catch(IOException e) {
 			e.printStackTrace();
 		}
 	}
