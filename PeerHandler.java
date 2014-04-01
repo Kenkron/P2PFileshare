@@ -144,14 +144,16 @@ public class PeerHandler {
 	 * 4byte message length, 1byte type, 4 byte payload (myBitfield)*/
 	public void sendRequest() {
 		//An oddly named array which contains indices of segments we don't
-		//have and they do
+		//have and they do && it hasn't been requested yet
 		ArrayList<Integer> weDontTheyDo = new ArrayList<Integer>();
 		Random randomizer=new Random((long)(Math.random()*Integer.MAX_VALUE));
 		
 		//First we select a random piece we don't have and they do have
 		for (int i = 0; i < remoteSegments.length; i++) {
-			//Check that we dont have this segment and they do
-			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+			//Check that we dont have this segment, they do, and it hasn't been requested yet
+			if (remoteSegments[i] && 
+				!peerProcess.myCopy.segmentOwned[i] &&
+				!peerProcess.currentlyRequestedPieces.contains(new Integer(i)));
 				weDontTheyDo.add(i);
 		}
 		
@@ -305,6 +307,7 @@ public class PeerHandler {
 								peerProcess.myCopy.writeFinalFile();
 							}
 							//TODO: determine whether to send NOT_INTERESTED to other peers
+							peerProcess.currentlyRequestedPieces.remove(new Integer(pieceIndex));
 							//TODO: determine whether to REQUEST another piece from this peer
 						}
 					}

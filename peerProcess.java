@@ -21,6 +21,9 @@ public class peerProcess {
 	public static ArrayList<PeerHandler> peerHandlerList = new ArrayList<PeerHandler>();
 	public static HashMap<RemotePeerInfo, PeerHandler> rpiToPeerHandler = new HashMap<RemotePeerInfo, PeerHandler>();
 	
+	/**A list of currently requested pieces*/
+	public static volatile ArrayList<Integer> currentlyRequestedPieces = new ArrayList<Integer>();
+	
 	public static Server server;
 	public static Thread serverThread;
 	

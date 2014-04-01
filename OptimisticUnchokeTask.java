@@ -52,9 +52,6 @@ public class OptimisticUnchokeTask extends TimerTask {
         RemotePeerInfo choice = possibleList.get(randomIndex);
         
         //TODO: unchoke choice
-        //TODO: rpiToPeerHandler currently can return a null, because the keys are prepopulated
-        //what we really care about are the peers that are currently connected.
-        //ask Kyle about this when needed, to see if it gets changed.
         peerProcess.rpiToPeerHandler.get(choice).sendUnchoke();
     }
 }
