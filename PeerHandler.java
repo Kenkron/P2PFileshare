@@ -180,7 +180,28 @@ public class PeerHandler {
 	}
 	
 	public void sendPiece(int pieceIndex) {
-		//TODO
+		byte[] sizeData=new byte[INT_LENGTH];
+		byte[] typeData=new byte[TYPE_LENGTH];
+		byte[] pieceData=null;
+		try {
+			 pieceData= peerProcess.myCopy.getPart(pieceIndex);
+		} catch (IOException e) {
+			peerProcess.myCopy.segmentOwned[pieceIndex]=false;
+			System.err.println("Tried to send a piece we don't have");
+			e.printStackTrace();
+			return;
+		}
+		ByteBuffer.wrap(sizeData).putInt(pieceData.length+typeData.length);
+
+		try {
+			oos.write(sizeData);
+			oos.write(typeData);
+			oos.write(pieceData);
+			oos.flush();
+		} catch (IOException e) {
+			System.err.println("could not send piece "+pieceIndex);
+			e.printStackTrace();
+		}
 	}
 
 
