@@ -214,6 +214,31 @@ public class PeerHandler {
 		}
 	}
 
+	public void sendPiece(int pieceIndex) {
+		byte[] sizeData=new byte[INT_LENGTH];
+		byte[] typeData=new byte[TYPE_LENGTH];
+		byte[] pieceData=null;
+		try {
+			 pieceData= peerProcess.myCopy.getPart(pieceIndex);
+		} catch (IOException e) {
+			peerProcess.myCopy.segmentOwned[pieceIndex]=false;
+			System.err.println("Tried to send a piece we don't have");
+			e.printStackTrace();
+			return;
+		}
+		ByteBuffer.wrap(sizeData).putInt(pieceData.length+typeData.length);
+
+		try {
+			oos.write(sizeData);
+			oos.write(typeData);
+			oos.write(pieceData);
+			oos.flush();
+		} catch (IOException e) {
+			System.err.println("could not send piece "+pieceIndex);
+			e.printStackTrace();
+		}
+	}
+
     /**Send a NOTINTERESTED message (code 3)
 	 * 4byte message length, 1byte type*/
 	public void sendNotInterested() {
@@ -320,23 +345,41 @@ public class PeerHandler {
 							//TODO: do we need to request this new piece? (I don't think so... - Sachit)
 							//We need to send an interested (or uninterested) message
 							decideInterest();
+							//TODO: do we need to request this new piece?
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
 							//Note: this should not go before while loop because a bitfield message doesn't need to be sent
 							//get bitfield, convert to segmentsOwned
 							boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
 							//cut the segmentOwned to the appropriate size
-							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
-							
+							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);				
 							//We now send an interested (or uninterested) message
 							decideInterest();
 						}
 						else if(mType == Message.MessageType.REQUEST) {
-							//TODO
+							int pieceIndex = ByteBuffer.wrap(payload).getInt();
+							if(!otherPeerIsChoked) {
+								sendPiece(pieceIndex);
+							}
+							else {
+								//TODO: add the requested piece to a variable to 
+							}
 						}
 						else if(mType == Message.MessageType.PIECE) {
 							//TODO
-							//TODO: Recheck all neighbors and resend UNinterested as necessary
+							
+							//TODO: review correctness
+							byte[] pieceID = new byte[INT_LENGTH];
+							byte[] piece = new byte[payload.length - INT_LENGTH];
+							System.arraycopy(payload, 0, pieceID, 0, INT_LENGTH);
+							System.arraycopy(payload, 0, piece, INT_LENGTH, payload.length-INT_LENGTH);
+							int pieceIndex = ByteBuffer.wrap(pieceID).getInt();
+							peerProcess.myCopy.addPart(pieceIndex, piece);
+							if(peerProcess.myCopy.isComplete()) {
+								peerProcess.myCopy.writeFinalFile();
+							}
+							//TODO: determine whether to send NOT_INTERESTED to other peers
+							//TODO: determine whether to REQUEST another piece from this peer
 						}
 					}
 				}
