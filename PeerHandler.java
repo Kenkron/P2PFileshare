@@ -141,7 +141,7 @@ public class PeerHandler {
 	}
 	
 	/**Send a REQUEST message (code 6)
-	 * 4byte message length, 1byte type, 4 byte payload (myBitfield)*/
+	 * 4byte message length, 1byte type, 4 byte payload (pieceIndex)*/
 	public void sendRequest() {
 		//An oddly named array which contains indices of segments we don't
 		//have and they do
@@ -178,7 +178,55 @@ public class PeerHandler {
 	    	e.printStackTrace();
 	    }
 	}
+	
+	/**This method has the job of deciding whether or not to send an interested
+	 * message after receiving a HAVE or BITFIELD */
+	public void decideInterest() {
+	    //An oddly named array which contains indices of segments we don't
+		//have and they do
+		int weDontTheyDo = 0;
+		
+		//Count all the pieces we don't have (and they do) and add to count
+		for (int i = 0; i < remoteSegments.length; i++) {
+			//Check that we dont have this segment and they do
+			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+				weDontTheyDo++;
+		}
+		
+		//If the they dont have any pieces that we don't, send uninterested
+		if (weDontTheyDo == 0)
+			sendNotInterested();
+		else
+		    sendInterested();
+	}
+	
+	/**Send a INTERESTED message (code 2)
+	 * 4byte message length, 1byte type*/
+	public void sendInterested() {
+        byte[] interestedBytes = new byte[PAYLOAD_OFFSET];
+	    interestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+        interestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.INTERESTED.ordinal(); 
+		try {
+			oos.write(interestedBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
 
+    /**Send a NOTINTERESTED message (code 3)
+	 * 4byte message length, 1byte type*/
+	public void sendNotInterested() {
+	    byte[] notInterestedBytes = new byte[PAYLOAD_OFFSET];
+	    notInterestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+        notInterestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.NOT_INTERESTED.ordinal(); 
+		try {
+			oos.write(notInterestedBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**Start the InputHandler*/
 	public void start() {
@@ -251,7 +299,8 @@ public class PeerHandler {
 	                                             + " is unchoked by " + 
 	                                             peerProcess.getRPI(PeerHandler.this).peerId);
 						Logger.chokedBy(otherPeerID);
-						//TODO: send back a request message
+						//Send back a request message
+						sendRequest();
 					}
 					else if(mType == Message.MessageType.INTERESTED) {
 						Logger.receivedInterested(otherPeerID);
@@ -268,7 +317,9 @@ public class PeerHandler {
 						if(mType == Message.MessageType.HAVE) {
 							int pieceIndex = ByteBuffer.wrap(payload).getInt();
 							remoteSegments[pieceIndex] = true;
-							//TODO: do we need to request this new piece?
+							//TODO: do we need to request this new piece? (I don't think so... - Sachit)
+							//We need to send an interested (or uninterested) message
+							decideInterest();
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
 							//Note: this should not go before while loop because a bitfield message doesn't need to be sent
@@ -276,12 +327,16 @@ public class PeerHandler {
 							boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
 							//cut the segmentOwned to the appropriate size
 							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
+							
+							//We now send an interested (or uninterested) message
+							decideInterest();
 						}
 						else if(mType == Message.MessageType.REQUEST) {
 							//TODO
 						}
 						else if(mType == Message.MessageType.PIECE) {
 							//TODO
+							//TODO: Recheck all neighbors and resend UNinterested as necessary
 						}
 					}
 				}
