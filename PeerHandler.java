@@ -194,19 +194,19 @@ public class PeerHandler {
 	/**This method has the job of deciding whether or not to send an interested
 	 * message after receiving a HAVE or BITFIELD */
 	public void decideInterest() {
-	    //An oddly named array which contains indices of segments we don't
-		//have and they do
-		int weDontTheyDo = 0;
-		
-		//Count all the pieces we don't have (and they do) and add to count
+		//A boolean which will be set if any one or more of the segments we
+		//need are in their bitfield (remoteSegments)
+		boolean interested = false;
+	
+		//Run through all of their segments and see if we don't have one
 		for (int i = 0; i < remoteSegments.length; i++) {
 			//Check that we dont have this segment and they do
 			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
-				weDontTheyDo++;
-		}
+				interested = true;
+		}	
 		
 		//If the they dont have any pieces that we don't, send uninterested
-		if (weDontTheyDo == 0)
+		if (!interested)
 			sendNotInterested();
 		else
 		    sendInterested();
