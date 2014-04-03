@@ -43,7 +43,7 @@ public class peerProcess {
 	public static int PieceSize=0;
 	/**Calculates and returns the number of pieces for the file, or -1 if not set yet*/
 	public static int getNumberOfSegments() {
-		return (FileSize > 0) ? (int)(Math.ceil(((float)PieceSize)/FileSize)) : -1; 
+		return (FileSize > 0) ? (int)(Math.ceil(((float)FileSize)/PieceSize)) : -1; 
 	}
 	
 	/**This is the FileData currently in transmission*/
