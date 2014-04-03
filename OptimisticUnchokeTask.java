@@ -48,6 +48,9 @@ public class OptimisticUnchokeTask extends TimerTask {
               }
         }
         
+        if (possibleList.size() < 1)
+            return;
+            
         int randomIndex = randomizer.nextInt(possibleList.size());
         RemotePeerInfo choice = possibleList.get(randomIndex);
         
