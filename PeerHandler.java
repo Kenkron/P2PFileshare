@@ -285,6 +285,87 @@ public class PeerHandler {
 				e.printStackTrace();
 			}
 		}
+		
+		public void rcvHandshake() {
+			
+		}
+		public void rcvChoke() {
+			Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
+                    + " is choked by " + 
+                    peerProcess.getRPI(PeerHandler.this).peerId);
+			Logger.chokedBy(otherPeerID);
+			weAreChoked=true;
+		}
+		
+		public void rcvUnchoke() {
+			Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
+                    + " is unchoked by " + 
+                    peerProcess.getRPI(PeerHandler.this).peerId);
+			Logger.chokedBy(otherPeerID);
+			Logger.unchokedBy(otherPeerID);
+			weAreChoked=false;
+			//Send back a request message
+			sendRequest();
+		}
+		
+		public void rcvInterested() {
+			Logger.receivedInterested(otherPeerID);
+			otherPeerIsInterested = true;
+		}
+		
+		public void rcvNotInterested() {
+			Logger.receivedNotInterested(otherPeerID);
+			otherPeerIsInterested = false;
+		}
+		
+		public void rcvHave(byte[] payload) {
+			int pieceIndex = ByteBuffer.wrap(payload).getInt();
+			remoteSegments[pieceIndex] = true;
+			//TODO: do we need to request this new piece? (I don't think so... - Sachit)
+			//We need to send an interested (or uninterested) message
+			decideInterest();
+		}
+		
+		public void rcvBitfield(byte[] payload) {
+			//Note: this should not go before while loop because a bitfield message doesn't need to be sent
+			//get bitfield, convert to segmentsOwned
+			boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
+			//cut the segmentOwned to the appropriate size
+			System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
+			String logString="recieved bitfield";
+			for (boolean bool : remoteSegments)
+				logString+=", "+Boolean.toString(bool);
+			Logger.debug(Logger.DEBUG_STANDARD,logString);			
+			//We now send an interested (or uninterested) message
+			decideInterest();
+		}
+		
+		public void rcvRequest(byte[] payload) {
+			int pieceIndex = ByteBuffer.wrap(payload).getInt();
+			if(!otherPeerIsChoked) {
+				sendPiece(pieceIndex);
+			}
+			else {
+				//TODO: add the requested piece to a variable to 
+			}
+		}
+		
+		public void rcvPiece(byte[] payload) throws IOException {
+			//TODO
+			//TODO: review correctness
+			byte[] pieceID = new byte[INT_LENGTH];
+			byte[] piece = new byte[payload.length - INT_LENGTH];
+			System.arraycopy(payload, 0, pieceID, 0, INT_LENGTH);
+			System.arraycopy(payload, 0, piece, INT_LENGTH, payload.length-INT_LENGTH);
+			int pieceIndex = ByteBuffer.wrap(pieceID).getInt();
+			peerProcess.myCopy.addPart(pieceIndex, piece);
+			if(peerProcess.myCopy.isComplete()) {
+				peerProcess.myCopy.writeFinalFile();
+			}
+			//TODO: determine whether to send NOT_INTERESTED to other peers
+			peerProcess.currentlyRequestedPieces.remove(new Integer(pieceIndex));
+			//TODO: determine whether to REQUEST another piece from this peer
+		}
 
 		@Override
 		public void run() {
@@ -327,81 +408,33 @@ public class PeerHandler {
 					int type = ois.read();
 					
 					Message.MessageType mType = Message.MessageType.values()[type];
-					//TODO: HANDLE INCOMING MESSAGES; maybe make this its own method
 					if(mType == Message.MessageType.CHOKE) {
-						Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
-	                                 + " is choked by " + 
-	                                 peerProcess.getRPI(PeerHandler.this).peerId);
-						Logger.chokedBy(otherPeerID);
-						weAreChoked=true;
+						rcvChoke();
 					}
 					else if(mType == Message.MessageType.UNCHOKE) {
-						Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
-	                                             + " is unchoked by " + 
-	                                             peerProcess.getRPI(PeerHandler.this).peerId);
-						Logger.chokedBy(otherPeerID);
-						Logger.unchokedBy(otherPeerID);
-						weAreChoked=false;
-						//Send back a request message
-						sendRequest();
+						rcvUnchoke();
 					}
 					else if(mType == Message.MessageType.INTERESTED) {
-						Logger.receivedInterested(otherPeerID);
-						otherPeerIsInterested = true;
+						rcvInterested();
 					}
 					else if(mType == Message.MessageType.NOT_INTERESTED) {
-						Logger.receivedNotInterested(otherPeerID);
-						otherPeerIsInterested = false;
+						rcvNotInterested();
 					}
 					else {
 						payload = new byte[len];
 						dataRcvd += len; //Increment the data received count
 						ois.read(payload);
 						if(mType == Message.MessageType.HAVE) {
-							int pieceIndex = ByteBuffer.wrap(payload).getInt();
-							remoteSegments[pieceIndex] = true;
-							//TODO: do we need to request this new piece? (I don't think so... - Sachit)
-							//We need to send an interested (or uninterested) message
-							decideInterest();
+							rcvHave(payload);
 						}
 						else if(mType == Message.MessageType.BITFIELD) {
-							//Note: this should not go before while loop because a bitfield message doesn't need to be sent
-							//get bitfield, convert to segmentsOwned
-							boolean[] segmentOwnedLarge = FileData.createSegmentsOwned(payload);
-							//cut the segmentOwned to the appropriate size
-							System.arraycopy(segmentOwnedLarge, 0, remoteSegments, 0, remoteSegments.length);
-							String logString="recieved bitfield";
-							for (boolean bool : remoteSegments)
-								logString+=", "+Boolean.toString(bool);
-							Logger.debug(Logger.DEBUG_STANDARD,logString);			
-							//We now send an interested (or uninterested) message
-							decideInterest();
+							rcvBitfield(payload);
 						}
 						else if(mType == Message.MessageType.REQUEST) {
-							int pieceIndex = ByteBuffer.wrap(payload).getInt();
-							if(!otherPeerIsChoked) {
-								sendPiece(pieceIndex);
-							}
-							else {
-								//TODO: add the requested piece to a variable to 
-							}
+							rcvRequest(payload);
 						}
 						else if(mType == Message.MessageType.PIECE) {
-							//TODO
-							
-							//TODO: review correctness
-							byte[] pieceID = new byte[INT_LENGTH];
-							byte[] piece = new byte[payload.length - INT_LENGTH];
-							System.arraycopy(payload, 0, pieceID, 0, INT_LENGTH);
-							System.arraycopy(payload, 0, piece, INT_LENGTH, payload.length-INT_LENGTH);
-							int pieceIndex = ByteBuffer.wrap(pieceID).getInt();
-							peerProcess.myCopy.addPart(pieceIndex, piece);
-							if(peerProcess.myCopy.isComplete()) {
-								peerProcess.myCopy.writeFinalFile();
-							}
-							//TODO: determine whether to send NOT_INTERESTED to other peers
-							peerProcess.currentlyRequestedPieces.remove(new Integer(pieceIndex));
-							//TODO: determine whether to REQUEST another piece from this peer
+							rcvPiece(payload);
 						}
 					}
 				}
