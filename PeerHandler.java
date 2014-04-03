@@ -286,9 +286,30 @@ public class PeerHandler {
 			}
 		}
 		
-		public void rcvHandshake() {
-			
+		public boolean rcvHandshake() throws IOException {
+			byte[] input = new byte[HANDSHAKE_LENGTH];
+			byte[] payload = new byte[INT_LENGTH];
+			boolean approved = false;
+			//listen for handshake:
+			ois.read(input, 0, HANDSHAKE_LENGTH);
+			//test handshake
+			Logger.debug(Logger.DEBUG_STANDARD, "Received handshake message: " + new String(input, 0, HELLO.length()));
+			if(new String(input, 0, HELLO.length()).equals(HELLO)) {
+				System.arraycopy(input, input.length-INT_LENGTH, payload, 0, INT_LENGTH);
+				int receivedPeerID = ByteBuffer.wrap(payload).getInt();
+				int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
+				otherPeerID = expectedPeerID;
+				if(receivedPeerID == expectedPeerID) {
+					approved = true;
+					if(!sentHandshake) {
+						sendHandshake();
+					}
+					sendBitfield();
+				}
+			}
+			return approved;
 		}
+		
 		public void rcvChoke() {
 			Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
                     + " is choked by " + 
@@ -369,34 +390,18 @@ public class PeerHandler {
 
 		@Override
 		public void run() {
-			byte[] input = new byte[HANDSHAKE_LENGTH];
 			byte[] payload = new byte[INT_LENGTH];
 			try {
-				//listen for handshake:
-				ois.read(input, 0, HANDSHAKE_LENGTH);
-				//test handshake
-				Logger.debug(Logger.DEBUG_STANDARD, "Received handshake message: " + new String(input, 0, HELLO.length()));
-				if(new String(input, 0, HELLO.length()).equals(HELLO)) {
-					System.arraycopy(input, input.length-INT_LENGTH, payload, 0, INT_LENGTH);
-					int receivedPeerID = ByteBuffer.wrap(payload).getInt();
-					int expectedPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
-					otherPeerID = expectedPeerID;
-					if(receivedPeerID == expectedPeerID) {
-						Logger.debug(Logger.DEBUG_STANDARD, "Handshake Approved");
-						if(!sentHandshake) {
-							sendHandshake();
-						}
-						sendBitfield();
-					}
-					else {
-						Logger.debug(Logger.DEBUG_STANDARD, "Handshake NOT Approved");
-						//TODO: what do we do if the expected peerID is not the received peerID?
-						//exception? loop until expected is received? resend handshake?
-					}
+				if(rcvHandshake()) {
+					Logger.debug(Logger.DEBUG_STANDARD, "Handshake Approved");
+				}
+				else {
+					Logger.debug(Logger.DEBUG_STANDARD, "Handshake NOT Approved");
+					//TODO: what do we do if the expected peerID is not the received peerID?
+					//exception? loop until expected is received? resend handshake?
 				}
 				//TODO: should we ignore a non-handshake first message? loop until a good one is found?
 				//this should probably go inside the approval section
-				
 				
 				payload = new byte[INT_LENGTH];
 				int next=0;
