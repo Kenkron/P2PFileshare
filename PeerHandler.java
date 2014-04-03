@@ -98,6 +98,59 @@ public class PeerHandler {
 	    }
 	}
 	
+	/**This method has the job of deciding whether or not to send an interested
+	 * message after receiving a HAVE or BITFIELD */
+	public void decideInterest() {
+		//A boolean which will be set if any one or more of the segments we
+		//need are in their bitfield (remoteSegments)
+		boolean interested = false;
+	
+		//Run through all of their segments and see if we don't have one
+		for (int i = 0; i < remoteSegments.length; i++) {
+			//Check that we dont have this segment and they do
+			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+				interested = true;
+		}	
+		
+		//If the they dont have any pieces that we don't, send uninterested
+		if (!interested)
+			sendNotInterested();
+		else
+		    sendInterested();
+	}
+	
+	/**Send a INTERESTED message (code 2)
+	 * 4byte message length, 1byte type*/
+	public void sendInterested() {
+        byte[] interestedBytes = new byte[PAYLOAD_OFFSET];
+	    interestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+        interestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.INTERESTED.ordinal(); 
+		try {
+			oos.write(interestedBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent INTERESTED to " + otherPeerID);
+	}
+	
+
+    /**Send a NOTINTERESTED message (code 3)
+	 * 4byte message length, 1byte type*/
+	public void sendNotInterested() {
+	    byte[] notInterestedBytes = new byte[PAYLOAD_OFFSET];
+	    notInterestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
+        notInterestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.NOT_INTERESTED.ordinal(); 
+		try {
+			oos.write(notInterestedBytes);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent NOT_INTERESTED to " + otherPeerID);
+	}
+	
 	/**Send a HAVE message
 	 * 4byte message length, 1byte HAVE ordinal, 4byte payload (pieceIndex)*/
 	public void sendHave(int pieceIndex) {
@@ -191,58 +244,7 @@ public class PeerHandler {
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent REQUEST for " + choice + " to " + otherPeerID);
 	}
 	
-	/**This method has the job of deciding whether or not to send an interested
-	 * message after receiving a HAVE or BITFIELD */
-	public void decideInterest() {
-		//A boolean which will be set if any one or more of the segments we
-		//need are in their bitfield (remoteSegments)
-		boolean interested = false;
 	
-		//Run through all of their segments and see if we don't have one
-		for (int i = 0; i < remoteSegments.length; i++) {
-			//Check that we dont have this segment and they do
-			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
-				interested = true;
-		}	
-		
-		//If the they dont have any pieces that we don't, send uninterested
-		if (!interested)
-			sendNotInterested();
-		else
-		    sendInterested();
-	}
-	
-	/**Send a INTERESTED message (code 2)
-	 * 4byte message length, 1byte type*/
-	public void sendInterested() {
-        byte[] interestedBytes = new byte[PAYLOAD_OFFSET];
-	    interestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
-        interestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.INTERESTED.ordinal(); 
-		try {
-			oos.write(interestedBytes);
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
-		
-		Logger.debug(Logger.DEBUG_STANDARD, "Sent INTERESTED to " + otherPeerID);
-	}
-	
-
-    /**Send a NOTINTERESTED message (code 3)
-	 * 4byte message length, 1byte type*/
-	public void sendNotInterested() {
-	    byte[] notInterestedBytes = new byte[PAYLOAD_OFFSET];
-	    notInterestedBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
-        notInterestedBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.NOT_INTERESTED.ordinal(); 
-		try {
-			oos.write(notInterestedBytes);
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
-		Logger.debug(Logger.DEBUG_STANDARD, "Sent NOT_INTERESTED to " + otherPeerID);
-	}
 
 	public void sendPiece(int pieceIndex) {
 		byte[] sizeData=new byte[INT_LENGTH];
