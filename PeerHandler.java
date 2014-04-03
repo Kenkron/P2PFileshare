@@ -322,7 +322,6 @@ public class PeerHandler {
 			Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
                     + " is unchoked by " + 
                     peerProcess.getRPI(PeerHandler.this).peerId);
-			Logger.chokedBy(otherPeerID);
 			Logger.unchokedBy(otherPeerID);
 			weAreChoked=false;
 			//Send back a request message
@@ -341,6 +340,7 @@ public class PeerHandler {
 		
 		public void rcvHave(byte[] payload) {
 			int pieceIndex = ByteBuffer.wrap(payload).getInt();
+			Logger.receivedHave(otherPeerID, pieceIndex);
 			remoteSegments[pieceIndex] = true;
 			//TODO: do we need to request this new piece? (I don't think so... - Sachit)
 			//We need to send an interested (or uninterested) message
@@ -379,8 +379,10 @@ public class PeerHandler {
 			System.arraycopy(payload, 0, pieceID, 0, INT_LENGTH);
 			System.arraycopy(payload, 0, piece, INT_LENGTH, payload.length-INT_LENGTH);
 			int pieceIndex = ByteBuffer.wrap(pieceID).getInt();
+			Logger.downloadedPiece(otherPeerID, pieceIndex);
 			peerProcess.myCopy.addPart(pieceIndex, piece);
 			if(peerProcess.myCopy.isComplete()) {
+				Logger.downloadComplete();
 				peerProcess.myCopy.writeFinalFile();
 			}
 			//TODO: determine whether to send NOT_INTERESTED to other peers
