@@ -26,7 +26,7 @@ public class PeerHandler {
 	private int otherPeerID;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
-	public boolean otherPeerIsChoked = false;
+	public boolean otherPeerIsChoked = true;
 	private boolean waitingForRequestFromOtherPeer = false;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
