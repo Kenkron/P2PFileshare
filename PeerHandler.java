@@ -504,6 +504,7 @@ public class PeerHandler {
 			if(ih != null) {
 				ih.close();
 			}
+			peerProcess.removePeerHandlerFromList(this);
 		}
 		catch(IOException e) {
 			e.printStackTrace();

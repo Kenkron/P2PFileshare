@@ -22,6 +22,8 @@ public class peerProcess {
 	public static HashMap<RemotePeerInfo, PeerHandler> rpiToPeerHandler = new HashMap<RemotePeerInfo, PeerHandler>();
 	
 	/**A list of currently requested pieces*/
+	public static volatile ArrayList<PeerHandler> currentPreferredNeighbors = new ArrayList<PeerHandler>();
+	public static volatile PeerHandler currentOptimisticallyUnchokedNeighbor = null;
 	public static volatile ArrayList<Integer> currentlyRequestedPieces = new ArrayList<Integer>();
 	
 	public static Server server;
@@ -214,6 +216,12 @@ public class peerProcess {
 			rpiToPeerHandler.put(getRPI(ph), ph);
 		}
 		return !exists;
+	}
+	
+	/**Removes a PeerHandler from the list of PeerHandlers. Invoke when a peer "disappears"/exits*/
+	public static synchronized void removePeerHandlerFromList(PeerHandler ph) {
+		peerHandlerList.remove(ph);
+		rpiToPeerHandler.remove(ph);
 	}
 	
 	public static synchronized RemotePeerInfo getRPI(PeerHandler ph) {
