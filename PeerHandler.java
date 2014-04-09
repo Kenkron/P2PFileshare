@@ -38,6 +38,8 @@ public class PeerHandler {
 	private byte[] getBitfield() {
 		return FileData.createBitfield(remoteSegments);
 	}
+	
+	private volatile int requestedPiece = -1;
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
@@ -208,23 +210,31 @@ public class PeerHandler {
 		ArrayList<Integer> weDontTheyDo = new ArrayList<Integer>();
 		Random randomizer=new Random((long)(Math.random()*Integer.MAX_VALUE));
 		
-		//First we select a random piece we don't have and they do have
-		for (int i = 0; i < remoteSegments.length; i++) {
-			//Check that we dont have this segment, they do, and it hasn't been requested yet
-			if (remoteSegments[i] && 
-				!peerProcess.myCopy.segmentOwned[i] &&
-				!peerProcess.currentlyRequestedPieces.contains(new Integer(i))) {
-					weDontTheyDo.add(i);
+		//synchronize to prevent data race. ex:
+		//T1:empty, adds to selectable list; T2: empty, adds to selectable list
+		//T2:randomly chosen, added to list; T2: randomly chosen, added to list (again) 
+		int choice;
+		synchronized(peerProcess.currentlyRequestedPieces) {
+			//First we select a random piece we don't have and they do have
+			for (int i = 0; i < remoteSegments.length; i++) {
+				//Check that we dont have this segment, they do, and it hasn't been requested yet
+				if (remoteSegments[i] && 
+					!peerProcess.myCopy.segmentOwned[i] &&
+					!peerProcess.currentlyRequestedPieces.contains(i)) {
+						weDontTheyDo.add(i);
+				}
 			}
+
+			//If the list is empty (no segments they have that we don't), just stop
+			if (weDontTheyDo.size() == 0)
+				return;
+				
+			//Choose randomly from the segments we own and they do
+			int randomIndex = randomizer.nextInt(weDontTheyDo.size());
+	        choice = weDontTheyDo.get(randomIndex);
+	        peerProcess.currentlyRequestedPieces.add(choice);
+	        requestedPiece = choice;
 		}
-		
-		//If the list is empty (no segments they have that we don't), just stop
-		if (weDontTheyDo.size() == 0)
-			return;
-			
-		//Choose randomly from the segments we own and they do
-		int randomIndex = randomizer.nextInt(weDontTheyDo.size());
-        int choice = weDontTheyDo.get(randomIndex);
 		
 		//Now send the actual message
 		byte[] payloadBytes = ByteBuffer.allocate(INT_LENGTH).putInt(choice).array();
@@ -451,6 +461,23 @@ public class PeerHandler {
 			catch(IOException e) {
 				e.printStackTrace();
 			}
+			finally {
+				System.out.println("Peer " + otherPeerID + " closed: ");
+				PeerHandler.this.close();
+			}
+		}
+		
+		private void close() {
+			try {
+				if(ois != null) {
+					ois.close();
+				}
+			}
+			catch(IOException e) {/*ignored*/}
+			
+			synchronized(peerProcess.currentlyRequestedPieces) {
+				peerProcess.currentlyRequestedPieces.remove(requestedPiece);
+			}
 		}
 	}
 	
@@ -462,5 +489,22 @@ public class PeerHandler {
 	/** Fetches the data received count*/
 	public int getDataRcvd() {
 		return dataRcvd;
+	}
+	
+	public void close() {
+		try {
+			if(oos != null) {
+				oos.close();
+			}
+			if(socket != null) {
+				socket.close();
+			}
+			if(ih != null) {
+				ih.close();
+			}
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
