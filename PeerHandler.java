@@ -398,7 +398,9 @@ public class PeerHandler {
 				peerProcess.myCopy.writeFinalFile();
 			}
 			//TODO: determine whether to send NOT_INTERESTED to other peers
-			peerProcess.currentlyRequestedPieces.remove(new Integer(pieceIndex));
+			synchronized(peerProcess.currentlyRequestedPieces) {
+				peerProcess.currentlyRequestedPieces.remove(new Integer(pieceIndex));
+			}
 			//TODO: determine whether to REQUEST another piece from this peer
 		}
 
