@@ -215,6 +215,13 @@ public class PeerHandler {
 		//T2:randomly chosen, added to list; T2: randomly chosen, added to list (again) 
 		int choice;
 		synchronized(peerProcess.currentlyRequestedPieces) {
+			System.out.print("Remote Segments: ");
+			for(boolean b : remoteSegments) System.out.print(b + ", ");
+			System.out.println("\nMy segments owned: ");
+			for(boolean b : peerProcess.myCopy.segmentOwned) System.out.print(b + ", ");
+			System.out.println("\nCurrent Requested Pieces: " + peerProcess.currentlyRequestedPieces);
+			
+			
 			//First we select a random piece we don't have and they do have
 			for (int i = 0; i < remoteSegments.length; i++) {
 				//Check that we dont have this segment, they do, and it hasn't been requested yet
@@ -423,10 +430,10 @@ public class PeerHandler {
 				int next=0;
 				while((next = ois.read(rcvMessageLengthField, 0, rcvMessageLengthField.length)) >=0) {
 					//messageLength[0-3], messageType[4]
-					Logger.debug(Logger.DEBUG_STANDARD, "PeerHandler: port "+socket.getPort()+" received "+next);
+					Logger.debug(Logger.DEBUG_STANDARD, "\nPeerHandler: received "+next + " byte messageLength Field");
 					
 					int len = ByteBuffer.wrap(rcvMessageLengthField).getInt() - TYPE_LENGTH;//1 byte is used for the type
-					System.out.println(len);
+					Logger.debug(Logger.DEBUG_STANDARD, "Expected payload length: " + len);
 					int type = ois.read();
 					
 					Message.MessageType mType = Message.MessageType.values()[type];
