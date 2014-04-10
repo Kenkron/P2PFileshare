@@ -141,7 +141,7 @@ public class Logger {
 	}
 	
 	private static String downloadedPieceString(int otherPeerID, int pieceIndex) {
-		return getFormattedDate() + ": Peer " + peerID + " has downloaded the piece " + pieceIndex + " from " + otherPeerID + "." +
+		return getFormattedDate() + ": Peer " + peerID + " has downloaded the piece " + pieceIndex + " from " + otherPeerID + ". " +
 				"Now the number of pieces it has is " + peerProcess.myCopy.getSegmentsOwnedCount() +  ".\n"; 
 	}
 	public static void downloadedPiece(int otherPeerID, int pieceIndex) {
