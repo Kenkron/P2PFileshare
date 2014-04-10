@@ -264,6 +264,38 @@ public class PeerHandler {
 	
 
 	public void sendPiece(int pieceIndex) {
+		Logger.debug(Logger.DEBUG_STANDARD, "Attempting to send a piece");
+		byte[] pieceBytes = null;//ByteBuffer.allocate(INT_LENGTH).putInt(choice).array();
+		try {
+			pieceBytes = peerProcess.myCopy.getPart(pieceIndex);
+		} catch (IOException e) {
+			peerProcess.myCopy.segmentOwned[pieceIndex]=false;
+			System.err.println("Tried to send a piece we don't have");
+			e.printStackTrace();
+			return;
+		}
+		byte[] pieceIndexBytes = ByteBuffer.allocate(INT_LENGTH).putInt(pieceIndex).array();
+		byte[] payloadBytes = new byte[INT_LENGTH + pieceBytes.length];
+		System.arraycopy(pieceIndexBytes, 0, payloadBytes, 0, pieceIndexBytes.length);
+		System.arraycopy(pieceBytes, 0, payloadBytes, pieceIndexBytes.length, pieceBytes.length);
+		
+		byte[] msgLengthBytes = ByteBuffer.allocate(INT_LENGTH).putInt(payloadBytes.length + TYPE_LENGTH).array();
+		byte[] outputBytes = new byte[msgLengthBytes.length + TYPE_LENGTH + payloadBytes.length];//4 + 1 + (4+variable)
+		
+		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
+		outputBytes[PAYLOAD_OFFSET-TYPE_LENGTH] = (byte) Message.MessageType.PIECE.ordinal();
+		System.arraycopy(payloadBytes, 0, outputBytes, PAYLOAD_OFFSET, payloadBytes.length);
+		
+		try {
+		    oos.write(outputBytes);
+	    }
+	    catch(IOException e) {
+	    	e.printStackTrace();
+	    }
+		
+		Logger.debug(Logger.DEBUG_STANDARD, "Sent PIECE " + pieceIndex + " to " + otherPeerID);
+		
+		/*
 		byte[] sizeData=new byte[INT_LENGTH];
 		byte[] typeData=new byte[TYPE_LENGTH];
 		byte[] pieceData=null;
@@ -276,6 +308,7 @@ public class PeerHandler {
 			return;
 		}
 		ByteBuffer.wrap(sizeData).putInt(pieceData.length+typeData.length);
+		
 
 		try {
 			oos.write(sizeData);
@@ -286,6 +319,7 @@ public class PeerHandler {
 			System.err.println("could not send piece "+pieceIndex);
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	/**Start the InputHandler*/
@@ -338,9 +372,6 @@ public class PeerHandler {
 		}
 		
 		public void rcvUnchoke() {
-			Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID
-                    + " is unchoked by " + 
-                    peerProcess.getRPI(PeerHandler.this).peerId);
 			Logger.unchokedBy(otherPeerID);
 			weAreChoked=false;
 			//Send back a request message
@@ -391,13 +422,15 @@ public class PeerHandler {
 		}
 		
 		public void rcvPiece(byte[] payload) throws IOException {
-			//TODO
+			Logger.debug(Logger.DEBUG_STANDARD, "Attempting to read a piece");
 			//TODO: review correctness
 			byte[] pieceID = new byte[INT_LENGTH];
-			byte[] piece = new byte[payload.length - INT_LENGTH];
-			System.arraycopy(payload, 0, pieceID, 0, INT_LENGTH);
-			System.arraycopy(payload, 0, piece, INT_LENGTH, payload.length-INT_LENGTH);
+			byte[] piece = new byte[payload.length - pieceID.length];
+			System.arraycopy(payload, 0, pieceID, 0, pieceID.length);
+			System.arraycopy(payload, pieceID.length, piece, 0, piece.length);
 			int pieceIndex = ByteBuffer.wrap(pieceID).getInt();
+			System.out.println("Recieved pieceIndex: " + pieceIndex);
+			
 			Logger.downloadedPiece(otherPeerID, pieceIndex);
 			peerProcess.myCopy.addPart(pieceIndex, piece);
 			if(peerProcess.myCopy.isComplete()) {
