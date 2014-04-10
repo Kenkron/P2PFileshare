@@ -22,8 +22,6 @@ public class peerProcess {
 	public static HashMap<RemotePeerInfo, PeerHandler> rpiToPeerHandler = new HashMap<RemotePeerInfo, PeerHandler>();
 	
 	/**A list of currently requested pieces*/
-	public static volatile ArrayList<PeerHandler> currentPreferredNeighbors = new ArrayList<PeerHandler>();
-	public static volatile PeerHandler currentOptimisticallyUnchokedNeighbor = null;
 	public static volatile ArrayList<Integer> currentlyRequestedPieces = new ArrayList<Integer>();
 	
 	public static Server server;
