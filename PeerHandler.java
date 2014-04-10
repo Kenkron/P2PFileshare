@@ -425,7 +425,8 @@ public class PeerHandler {
 					//messageLength[0-3], messageType[4]
 					Logger.debug(Logger.DEBUG_STANDARD, "PeerHandler: port "+socket.getPort()+" received "+next);
 					
-					int len = ByteBuffer.wrap(payload).getInt() - TYPE_LENGTH;//1 byte is used for the type
+					int len = ByteBuffer.wrap(rcvMessageLengthField).getInt() - TYPE_LENGTH;//1 byte is used for the type
+					System.out.println(len);
 					int type = ois.read();
 					
 					Message.MessageType mType = Message.MessageType.values()[type];
