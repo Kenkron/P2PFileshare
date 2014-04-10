@@ -232,7 +232,7 @@ public class PeerHandler {
 			//Choose randomly from the segments we own and they do
 			int randomIndex = randomizer.nextInt(weDontTheyDo.size());
 	        choice = weDontTheyDo.get(randomIndex);
-	        peerProcess.currentlyRequestedPieces.add(choice);
+	        peerProcess.currentlyRequestedPieces.add(new Integer(choice));
 	        requestedPiece = choice;
 		}
 		
@@ -478,7 +478,7 @@ public class PeerHandler {
 			catch(IOException e) {/*ignored*/}
 			
 			synchronized(peerProcess.currentlyRequestedPieces) {
-				peerProcess.currentlyRequestedPieces.remove(requestedPiece);
+				peerProcess.currentlyRequestedPieces.remove(new Integer(requestedPiece));
 			}
 		}
 	}
