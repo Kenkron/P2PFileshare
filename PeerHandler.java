@@ -407,6 +407,7 @@ public class PeerHandler {
 		@Override
 		public void run() {
 			byte[] payload = new byte[INT_LENGTH];
+			byte[] rcvMessageLengthField = new byte[INT_LENGTH];
 			try {
 				if(rcvHandshake()) {
 					Logger.debug(Logger.DEBUG_STANDARD, "Handshake Approved");
@@ -419,9 +420,8 @@ public class PeerHandler {
 				//TODO: should we ignore a non-handshake first message? loop until a good one is found?
 				//this should probably go inside the approval section
 				
-				payload = new byte[INT_LENGTH];
 				int next=0;
-				while((next = ois.read(payload, 0, payload.length)) >=0) {
+				while((next = ois.read(rcvMessageLengthField, 0, rcvMessageLengthField.length)) >=0) {
 					//messageLength[0-3], messageType[4]
 					Logger.debug(Logger.DEBUG_STANDARD, "PeerHandler: port "+socket.getPort()+" received "+next);
 					
