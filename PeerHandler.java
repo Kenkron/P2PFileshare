@@ -26,7 +26,7 @@ public class PeerHandler {
 	private int otherPeerID;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
-	public boolean otherPeerIsChoked = true;
+	public Boolean otherPeerIsChoked = true;
 	private boolean waitingForRequestFromOtherPeer = false;
 	/**The amount of data received from this peer since the last choke cycle*/
 	private int dataRcvd = 0;
@@ -73,7 +73,7 @@ public class PeerHandler {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
-		Logger.debug(Logger.DEBUG_ONCE, "Handshake Sent");
+		Logger.debug(Logger.DEBUG_ONCE, "Sent HANDSHAKE");
 		sentHandshake = true;
 	}
 	
@@ -92,7 +92,11 @@ public class PeerHandler {
 	}
 	
 	public void sendUnchoke() {
-	    if (otherPeerIsChoked) {
+		boolean doUnchoke = false;
+		synchronized(otherPeerIsChoked) {
+			if(otherPeerIsChoked) doUnchoke = true;
+		}
+	    if (doUnchoke) {
 	    	otherPeerIsChoked = false;
 	        byte[] unchokeBytes = new byte[PAYLOAD_OFFSET];
 	        unchokeBytes[INT_LENGTH-1] = (byte) TYPE_LENGTH;//set message length to 1
