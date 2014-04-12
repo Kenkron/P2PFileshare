@@ -528,7 +528,13 @@ public class PeerHandler {
 				e.printStackTrace();
 			}
 			finally {
-				System.out.println("Peer " + otherPeerID + " closed.");
+				System.out.print("Peer " + otherPeerID + " closed ");
+				if(!isRemoteSegmentsComplete() || !peerProcess.myCopy.isComplete()) {
+					System.out.println("unexpectedly");
+				}
+				else {
+					System.out.println("cleanly");
+				}
 				PeerHandler.this.close();
 			}
 		}

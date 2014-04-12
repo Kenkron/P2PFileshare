@@ -16,8 +16,6 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         //runs, it will contain "un-preferred" neighbors
         ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
         
-        //TODO: this was a quick fix.  
-        //... It should be peer reviewed to ensure that it is good code.
         for (PeerHandler handle: peerProcess.peerHandlerList){
         	peerList.add(peerProcess.getRPI(handle));
         }
@@ -31,14 +29,14 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         ArrayList<RemotePeerInfo> preferredList = new ArrayList<RemotePeerInfo>();
         
         //first check if we have less peers than # of allowable preferred neighbors
-        if (peerList.size() <= peerProcess.NumberOfPreferredNeighbors) {
+        //if (peerList.size() <= peerProcess.NumberOfPreferredNeighbors) {
             //if so, just make everyone a preferred neighbor
-        	preferredList = new ArrayList<RemotePeerInfo>(peerList);
+        //	preferredList = new ArrayList<RemotePeerInfo>(peerList);
             //now clear the list of "un-preferred" neighbors
-            peerList.clear();
-        }
+        //    peerList.clear();
+        //}
         //otherwise, check for k best
-        else {
+        //else {
             //for each of k preferred neighbors, find highest in list so far.
             for (int i = 0; i < peerProcess.NumberOfPreferredNeighbors; i++) {
                 RemotePeerInfo best = null;
@@ -56,10 +54,12 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
                 }
                 //Now place the best neighbor in the preferred list and remove 
                 //it from list of peers which are being considered
-                preferredList.add(best);
-                peerList.remove(best);
+                if(best != null) {
+                	preferredList.add(best);
+                	peerList.remove(best);
+                }
             }
-        }
+        //}
         
         //now clear data counters for all neighbors
         for (int x = 0; x < peerProcess.peerList.size(); x++)
@@ -69,7 +69,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         for (int i = 0; i < preferredList.size(); i++)
             peerProcess.rpiToPeerHandler.get(preferredList.get(i)).sendUnchoke();
         
-        //choke un-preferred neighbors
+        //choke un-preferred neighbors, except optimistically-unchoked neighbor
         for (int y = 0; y < peerList.size(); y++) {
         	PeerHandler ph = peerProcess.rpiToPeerHandler.get(peerList.get(y));
         	if(ph != peerProcess.currentOptimisticallyUnchokedNeighbor) {
@@ -78,11 +78,13 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         }
             
         //Log this
-        String preferredListString = preferredList.get(0).peerId;
-        for (int z = 1; z < preferredList.size(); z++)
-            preferredListString = preferredListString + ", " + 
-                                  preferredList.get(z).peerId;
-        Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID + " has the preferred " +
-                     "neighbors " + preferredListString);  
+        if(preferredList.size() > 0) {
+        	String preferredListString = preferredList.get(0).peerId;
+        	for (int z = 1; z < preferredList.size(); z++)
+        		preferredListString = preferredListString + ", " + 
+        				preferredList.get(z).peerId;
+        	Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID + " has the preferred " +
+        			"neighbors " + preferredListString);
+        }
      }
 }

@@ -27,7 +27,7 @@ public class Server implements Runnable {
 		try {
 			while(!Thread.interrupted()) {
 				Socket s = serverSocket.accept();
-				Logger.debug(Logger.DEBUG_STANDARD, "Server: recieved a connection");
+				Logger.debug(Logger.DEBUG_STANDARD, "Server: received a connection");
 
 				PeerHandler ph = new PeerHandler(s);
 				if(peerProcess.addPeerHandlerToList(ph)) {

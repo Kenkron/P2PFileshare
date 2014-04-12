@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.IOException;
@@ -92,10 +91,16 @@ public class peerProcess {
 		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
 		                                      0, OptimisticUnchokingInterval);
 
-		//TODO: determine when all connections have been made and then finished
-		//TODO: we may have to make PeerHandler a Thread, then join() on them
+		//TODO: create a total count of connections made
+		//update within addPeerHandlerToList()
+		//wait() on a lock, notify on the lock when connectionsMade == peerList.size()
+		//wait() on a second lock, notify when to connections dropped == peerList.size()
+		for(PeerHandler ph : peerHandlerList) {
+			//TODO: we may have to make PeerHandler a Thread, then join() on them
+			//TODO: maybe we shouldn't remove the PeerHandler from the list when it finishes, but instead after it joins
+			//ph.join();
+		}
 		
-		//TODO: serverThread.interrupt() 
 		serverThread.join();
 		
 		Logger.closeLogger();
@@ -143,7 +148,6 @@ public class peerProcess {
 		scanner.close();
 	}
 	
-	//TODO: can we just copy and modify StartRemotePeers.getConfiguration() 
 	public static void readPeerInfo() {
 		//sort peerList? ie: RemotePeerInfo implements Comparable, Collections.sort()
 		//peerList does not contain self
