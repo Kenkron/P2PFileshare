@@ -48,13 +48,16 @@ public class OptimisticUnchokeTask extends TimerTask {
               }
         }
         
-        if (possibleList.size() < 1)
+        if (possibleList.size() < 1) {
+        	peerProcess.currentOptimisticallyUnchokedNeighbor = null;
             return;
+        }
             
         int randomIndex = randomizer.nextInt(possibleList.size());
         RemotePeerInfo choice = possibleList.get(randomIndex);
         
-        //TODO: unchoke choice
-        peerProcess.rpiToPeerHandler.get(choice).sendUnchoke();
+        PeerHandler ph = peerProcess.rpiToPeerHandler.get(choice);
+        peerProcess.currentOptimisticallyUnchokedNeighbor = ph;
+        ph.sendUnchoke();
     }
 }

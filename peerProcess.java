@@ -24,6 +24,9 @@ public class peerProcess {
 	/**A list of currently requested pieces*/
 	public static volatile ArrayList<Integer> currentlyRequestedPieces = new ArrayList<Integer>();
 	
+	/**The current optimistically-unchoked neighbor; used to not choke it within PreferredNeighborUnchokeTask*/
+	public static volatile PeerHandler currentOptimisticallyUnchokedNeighbor = null;
+	
 	public static Server server;
 	public static Thread serverThread;
 	
