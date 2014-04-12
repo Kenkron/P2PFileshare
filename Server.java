@@ -24,22 +24,24 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
-		while(true) {
-			try {
+		try {
+			while(!Thread.interrupted()) {
 				Socket s = serverSocket.accept();
 				Logger.debug(Logger.DEBUG_STANDARD, "Server: recieved a connection");
 
 				PeerHandler ph = new PeerHandler(s);
 				if(peerProcess.addPeerHandlerToList(ph)) {
 					ph.start();
-					//Get the peerID from the hostname of the associated socket
-					//TODO remove next 6 lines if the getRPI actually works
 					String otherPeerID = null;
+					/*
+					//Get the peerID from the hostname of the associated socket
 					for(RemotePeerInfo rpi : peerList) {
 						if(rpi.peerAddress.equals(s.getInetAddress().getCanonicalHostName())) {
 							otherPeerID = rpi.peerId;
 						}
 					}
+					*/
+					
 					otherPeerID = peerProcess.getRPI(ph).peerId;
 					Logger.connectedFrom(Integer.valueOf(otherPeerID));
 					Logger.debug(Logger.DEBUG_STANDARD,"Server: Connection From "+otherPeerID);
@@ -47,9 +49,9 @@ public class Server implements Runnable {
 					Logger.debug(Logger.DEBUG_STANDARD,"Server: connection rejected");
 				}
 			}
-			catch(IOException e) {
-				e.printStackTrace();
-			}
+		}
+		catch(IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

@@ -89,6 +89,10 @@ public class peerProcess {
 		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
 		                                      0, OptimisticUnchokingInterval);
 
+		//TODO: determine when all connections have been made and then finished
+		//TODO: we may have to make PeerHandler a Thread, then join() on them
+		
+		//TODO: serverThread.interrupt() 
 		serverThread.join();
 		
 		Logger.closeLogger();

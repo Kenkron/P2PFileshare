@@ -34,7 +34,6 @@ public class PeerHandler {
 	public boolean weAreChoked=true;
 	
 	private boolean[] remoteSegments;
-	//this might be unnecessary 
 	private byte[] getBitfield() {
 		return FileData.createBitfield(remoteSegments);
 	}
@@ -44,6 +43,15 @@ public class PeerHandler {
 			retVal += Integer.toBinaryString(b).substring(Integer.SIZE - Byte.SIZE) + " ";
 		}
 		return retVal;
+	}
+	private boolean isRemoteSegmentsComplete() {
+		boolean missingPiece=false;
+		for(int i=0;i<remoteSegments.length;i++) {
+			if(!remoteSegments[i]) {
+				missingPiece=true;
+			}
+		}
+		return !missingPiece;
 	}
 	
 	private volatile int requestedPiece = -1;
@@ -109,6 +117,20 @@ public class PeerHandler {
 		    }
 		    Logger.debug(Logger.DEBUG_STANDARD, "UNCHOKING " + otherPeerID);
 	    }
+	}
+	
+	private boolean isInterested() {
+		//A boolean which will be set if any one or more of the segments we
+		//need are in their bitfield (remoteSegments)
+		boolean interested = false;
+		
+		//Run through all of their segments and see if we don't have one
+		for (int i = 0; i < remoteSegments.length; i++) {
+			//Check that we dont have this segment and they do
+			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+				interested = true;
+		}
+		return interested;
 	}
 	
 	/**This method has the job of deciding whether or not to send an interested
@@ -437,9 +459,14 @@ public class PeerHandler {
 			synchronized(peerProcess.currentlyRequestedPieces) {
 				peerProcess.currentlyRequestedPieces.remove(new Integer(pieceIndex));
 			}
-			//TODO: determine whether to send NOT_INTERESTED to other peers
-			//TODO: broadcast HAVE to other peers
-			//TODO: determine whether to REQUEST another piece from this peer
+			
+			//send HAVE to other peers, set other PeerHandler's INTERESTED/NOT_INTERESTED
+			for(PeerHandler ph : peerProcess.peerHandlerList) {
+				ph.sendHave(pieceIndex);
+				ph.decideInterest();
+			}
+			
+			sendRequest();//this handles whether or not to send a request
 		}
 
 		@Override
@@ -459,7 +486,8 @@ public class PeerHandler {
 				//this should probably go inside the approval section
 				
 				int next=0;
-				while((next = ois.read(rcvMessageLengthField, 0, rcvMessageLengthField.length)) >=0) {
+				while((next = ois.read(rcvMessageLengthField, 0, rcvMessageLengthField.length)) >=0 &&
+						(!isRemoteSegmentsComplete() || !peerProcess.myCopy.isComplete())) {
 					//messageLength[0-3], messageType[4]
 					int len = ByteBuffer.wrap(rcvMessageLengthField).getInt() - TYPE_LENGTH;//1 byte is used for the type
 					int type = ois.read();
