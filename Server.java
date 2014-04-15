@@ -32,6 +32,7 @@ public class Server implements Runnable {
 					 s = serverSocket.accept();
 				}catch (SocketException e){
 					Logger.debug(Logger.DEBUG_ONCE, "Server interrupted");
+					break;
 				}
 				Logger.debug(Logger.DEBUG_STANDARD, "Server: received a connection");
 
