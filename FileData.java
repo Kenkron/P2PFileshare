@@ -18,9 +18,9 @@ public class FileData{
 	public final String FILE_NAME;
 	
 	/**a cached array of booleans indicating whether each segment is owned*/
-	boolean[] segmentOwned;
+	private boolean[] segmentOwned;
 	/**get the number of segments owned*/
-	int getSegmentsOwnedCount() {
+	synchronized int getSegmentsOwnedCount() {
 		int count = 0;
 		for(boolean x : segmentOwned) {
 			if(x) count++;
@@ -30,6 +30,15 @@ public class FileData{
 	/**get the bitfield associated with the current segmentOwned*/
 	byte[] getBitfield() {
 		return createBitfield(segmentOwned);
+	}
+	public synchronized int getSegmentOwnedLength() {
+		return segmentOwned.length;
+	}
+	public synchronized boolean getSegment(int i) {
+		return segmentOwned[i];
+	}
+	public synchronized void setSegmentOwned(int i, boolean value) {
+		segmentOwned[i] = value;
 	}
 	
 	/**Converts a boolean[] array of owned segments to a byte[] array bitfield*/
@@ -78,6 +87,10 @@ public class FileData{
 		breakFile(segmentSize);
 	}
 	
+	public synchronized void resizeSegmentOwned(int numOfParts) {
+		segmentOwned = new boolean[numOfParts];
+	}
+	
 	/**breaks the file given by FILE_NAME into segments in the DEMP_DIR directory
 	 * allowing this program to get individual parts.
 	 * @throws IOException */
@@ -85,7 +98,7 @@ public class FileData{
 		File inputFile = new File(FILE_NAME);
 		FileInputStream input=new FileInputStream(inputFile);
 		int numOfParts=(int) Math.ceil(inputFile.length()/(float)segmentSize);
-		segmentOwned=new boolean[numOfParts];
+		resizeSegmentOwned(numOfParts);
 		int partCounter=0;
 		while (input.available()>0){
 			byte[] nextData=new byte[Math.min(segmentSize,input.available())];
@@ -93,8 +106,8 @@ public class FileData{
 			addPart(partCounter, nextData);
 			partCounter++;
 		}
-		for (int i = 0; i< segmentOwned.length; i++){
-			segmentOwned[i]=true;
+		for (int i = 0; i< getSegmentOwnedLength(); i++){
+			setSegmentOwned(i, true);
 		}
 		input.close();
 	}
@@ -112,10 +125,10 @@ public class FileData{
 	//TODO: Remove? since it's not necessary?
 	/**Updates the segmentOwned and bitfields according to any pre-existing partial files*/
 	public void findExistingPartialFiles() {
-		for(int part = 0;part<segmentOwned.length;part++) {
+		for(int part = 0;part<getSegmentOwnedLength();part++) {
 			File partialFile = new File(TEMP_DIR+FILE_NAME+ part +TEMP_EXTENSION);
 			if(partialFile.exists()) {
-				segmentOwned[part] = true;
+				setSegmentOwned(part, true);
 			}
 		}
 	}
@@ -131,7 +144,7 @@ public class FileData{
 		FileOutputStream output = new FileOutputStream(outputFile);
 		output.write(data);
 		output.close();
-		segmentOwned[part]=true;
+		setSegmentOwned(part, true);
 	}
 	
 	/**gets a part of a file*/
@@ -146,15 +159,15 @@ public class FileData{
 	
 	/**returns whether the given part has been received.
 	 * (returns cached value, does not re-check)*/
-	public boolean hasPart(int part){
+	public synchronized boolean hasPart(int part){
 		return segmentOwned[part];
 	}
 	
 	/**returns true iff all of the file segments have been added.*/
 	public boolean isComplete(){
 		boolean missingPiece=false;
-		for (int i=0;i<segmentOwned.length;i++){
-			if (!segmentOwned[i]){
+		for (int i=0;i<getSegmentOwnedLength();i++){
+			if (!hasPart(i)){
 				missingPiece=true;
 			}
 		}
@@ -173,7 +186,7 @@ public class FileData{
 	public void writeFinalFile(String filename) throws IOException{
 		File outputFile = new File(filename);
 		FileOutputStream output = new FileOutputStream(outputFile);
-		for (int i=0;i<segmentOwned.length;i++){
+		for (int i=0;i<getSegmentOwnedLength();i++){
 			byte[] nextSegment=getPart(i);
 			output.write(nextSegment);
 		}
