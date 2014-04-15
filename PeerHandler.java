@@ -86,7 +86,8 @@ public class PeerHandler {
 		try {
 			oos.write(outputBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendHandshake(). Socket closed.");
 		}
 		Logger.debug(Logger.DEBUG_ONCE, "Sent HANDSHAKE");
 		sentHandshake = true;
@@ -101,7 +102,8 @@ public class PeerHandler {
 		try {
 			oos.write(chokeBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendChoke(). Socket closed.");
 		}
 		Logger.debug(Logger.DEBUG_STANDARD, "CHOKING " + otherPeerID);
 		this.otherPeerIsChoked = true;
@@ -123,7 +125,8 @@ public class PeerHandler {
 			try {
 				oos.write(unchokeBytes);
 			} catch (IOException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("Can't sendUnchoke(). Socket closed.");
 			}
 			Logger.debug(Logger.DEBUG_STANDARD, "UNCHOKING " + otherPeerID);
 		}
@@ -178,7 +181,8 @@ public class PeerHandler {
 		try {
 			oos.write(interestedBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendInterested(). Socket closed.");
 		}
 
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent INTERESTED to " + otherPeerID);
@@ -196,7 +200,8 @@ public class PeerHandler {
 		try {
 			oos.write(notInterestedBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendNotInterested(). Socket closed.");
 		}
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent NOT_INTERESTED to "
 				+ otherPeerID);
@@ -222,7 +227,8 @@ public class PeerHandler {
 		try {
 			oos.write(outputBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendHave(). Socket closed.");
 		}
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent HAVE " + pieceIndex + " to "
 				+ otherPeerID);
@@ -256,7 +262,8 @@ public class PeerHandler {
 			try {
 				oos.write(outputBytes);
 			} catch (IOException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("Can't sendBitfield(). Socket closed.");
 			}
 
 			Logger.debug(Logger.DEBUG_STANDARD, "Sent BITFIELD to "
@@ -324,7 +331,8 @@ public class PeerHandler {
 		try {
 			oos.write(outputBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendRequest(). Socket closed.");
 		}
 
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent REQUEST for " + choice
@@ -364,7 +372,8 @@ public class PeerHandler {
 		try {
 			oos.write(outputBytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Can't sendPiece(). Socket closed.");
 		}
 
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent PIECE " + pieceIndex + " to "
@@ -505,14 +514,8 @@ public class PeerHandler {
 				} else {
 					Logger.debug(Logger.DEBUG_STANDARD,
 							"Handshake NOT Approved");
-					// TODO: what do we do if the expected peerID is not the
-					// received peerID?
-					// exception? loop until expected is received? resend
-					// handshake?
+				    System.exit(1);
 				}
-				// TODO: should we ignore a non-handshake first message? loop
-				// until a good one is found?
-				// this should probably go inside the approval section
 
 				int next = 0;
 				while ((next = ois.read(rcvMessageLengthField, 0,
@@ -549,7 +552,7 @@ public class PeerHandler {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				/*ignored*/
 			} finally {
 				System.out.print("Peer " + otherPeerID + " closed ");
 				if (!isRemoteSegmentsComplete()
