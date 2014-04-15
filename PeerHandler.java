@@ -40,7 +40,7 @@ public class PeerHandler {
 	private String getBitfieldString() {
 		String retVal = "";
 		for(byte b : getBitfield()) {
-			retVal += Integer.toBinaryString(b).substring(Integer.SIZE - Byte.SIZE) + " ";
+			retVal += Integer.toBinaryString(b) + " ";
 		}
 		return retVal;
 	}
