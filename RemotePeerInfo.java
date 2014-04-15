@@ -11,7 +11,7 @@ public class RemotePeerInfo {
 	public String peerId;
 	public String peerAddress;
 	public String peerPort;
-	public boolean hasFile;
+	private volatile boolean hasFile;
 	
 	public RemotePeerInfo(String pId, String pAddress, String pPort) {
 		peerId = pId;
@@ -19,7 +19,11 @@ public class RemotePeerInfo {
 		peerPort = pPort;
 	}
 	
-	public void setHasFile(boolean val) {
+	public synchronized boolean hasFile(){
+		return hasFile;
+	}
+	
+	public synchronized void setHasFile(boolean val) {
 		hasFile = val;
 	}
 }

@@ -574,7 +574,9 @@ public class PeerHandler {
 			if(ih != null) {
 				ih.close();
 			}
+			peerProcess.getRPI(this).setHasFile(true);
 			peerProcess.removePeerHandlerFromList(this);
+			peerProcess.server.checkCompletion(peerProcess.serverThread);
 		}
 		catch(IOException e) {
 			e.printStackTrace();

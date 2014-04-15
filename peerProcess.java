@@ -75,7 +75,7 @@ public class peerProcess {
 		
 		readPeerInfo();
 		
-		if (myRPI.hasFile){
+		if (myRPI.hasFile()){
 			myCopy=new FileData("./peer_" + peerID + "/", FileName, PieceSize);
 		}else{
 			myCopy=new FileData("./peer_" + peerID + "/", getNumberOfSegments(), FileName);

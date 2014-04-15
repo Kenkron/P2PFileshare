@@ -58,8 +58,8 @@ public class Server implements Runnable {
 	
 	public void checkCompletion(Thread serverThread){
 		boolean done=true;
-		for (PeerHandler p:peerHandlerList)
-			done=done&&p.isRemoteSegmentsComplete();
+		for (RemotePeerInfo rpi:peerList)
+			done=done&&rpi.hasFile();
 		if (done)
 			serverThread.interrupt();
 	}
