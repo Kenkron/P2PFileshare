@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 
@@ -26,7 +27,12 @@ public class Server implements Runnable {
 	public void run() {
 		try {
 			while(!Thread.interrupted()) {
-				Socket s = serverSocket.accept();
+				Socket s = null;
+				try{
+					 s = serverSocket.accept();
+				}catch (SocketException e){
+					Logger.debug(Logger.DEBUG_ONCE, "Server interrupted");
+				}
 				Logger.debug(Logger.DEBUG_STANDARD, "Server: received a connection");
 
 				PeerHandler ph = new PeerHandler(s);
