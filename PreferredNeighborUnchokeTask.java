@@ -27,7 +27,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
         
         //The empty preferred list below will contain the preferred neighbors 
         //after this method is executed. 
-        ArrayList<RemotePeerInfo> preferredList = new ArrayList<RemotePeerInfo>();
+        ArrayList<PeerHandler> preferredList = new ArrayList<PeerHandler>();
         
         for (int i = 0; i < peerProcess.NumberOfPreferredNeighbors; i++) {
             PeerHandler best = null;
@@ -68,10 +68,10 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
             
         //Log this
         if(preferredList.size() > 0) {
-        	String preferredListString = preferredList.get(0).peerId;
+        	String preferredListString = peerProcess.getRPI(preferredList.get(0)).peerId;
         	for (int z = 1; z < preferredList.size(); z++)
         		preferredListString = preferredListString + ", " + 
-        				preferredList.get(z).peerId;
+        				peerProcess.getRPI(preferredList.get(z)).peerId;
         	Logger.debug(Logger.DEBUG_STANDARD, "Peer " + peerProcess.peerID + " has the preferred " +
         			"neighbors " + preferredListString);
         }
