@@ -37,24 +37,26 @@ public class Server implements Runnable {
 				Logger.debug(Logger.DEBUG_STANDARD, "Server: received a connection");
 
 				PeerHandler ph = new PeerHandler(s);
-				if(peerProcess.addPeerHandlerToList(ph)) {
+
+				if (peerProcess.addPeerHandlerToList(ph)) {
 					ph.start();
 					String otherPeerID = null;
 					/*
-					//Get the peerID from the hostname of the associated socket
-					for(RemotePeerInfo rpi : peerList) {
-						if(rpi.peerAddress.equals(s.getInetAddress().getCanonicalHostName())) {
-							otherPeerID = rpi.peerId;
-						}
-					}
-					*/
-					
+					 * //Get the peerID from the hostname of the associated
+					 * socket for(RemotePeerInfo rpi : peerList) {
+					 * if(rpi.peerAddress
+					 * .equals(s.getInetAddress().getCanonicalHostName())) {
+					 * otherPeerID = rpi.peerId; } }
+					 */
+
 					otherPeerID = peerProcess.getRPI(ph).peerId;
 					Logger.connectedFrom(Integer.valueOf(otherPeerID));
-					Logger.debug(Logger.DEBUG_STANDARD,"Server: Connection From "+otherPeerID);
-					
+					Logger.debug(Logger.DEBUG_STANDARD,
+							"Server: Connection From " + otherPeerID);
+
 				} else {
-					Logger.debug(Logger.DEBUG_STANDARD,"Server: connection rejected");
+					Logger.debug(Logger.DEBUG_STANDARD,
+							"Server: connection rejected");
 				}
 			}
 		}
@@ -63,7 +65,7 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public void checkCompletion(Thread serverThread){
+	public synchronized void checkCompletion(Thread serverThread){
 		boolean done=true;
 		for (RemotePeerInfo rpi:peerList)
 			done=done&&rpi.hasFile();
