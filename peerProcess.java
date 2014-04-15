@@ -216,31 +216,37 @@ public class peerProcess {
 	 */
 	public static synchronized boolean addPeerHandlerToList(PeerHandler ph) {
 		boolean exists = false;
-		for(PeerHandler currentPeer : peerHandlerList) {
-			Socket currentSocket = currentPeer.socket;
-			if(ph.socket.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
-				exists = true;
+		synchronized(peerHandlerList) {
+			for(PeerHandler currentPeer : peerHandlerList) {
+				Socket currentSocket = currentPeer.socket;
+				if(ph.socket.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
+					exists = true;
+				}
 			}
-		}
-		if(!exists) {
-			peerHandlerList.add(ph);
-			rpiToPeerHandler.put(getRPI(ph), ph);
+			if(!exists) {
+				peerHandlerList.add(ph);
+				rpiToPeerHandler.put(getRPI(ph), ph);
+			}
 		}
 		return !exists;
 	}
 	
 	/**Removes a PeerHandler from the list of PeerHandlers. Invoke when a peer "disappears"/exits*/
 	public static synchronized void removePeerHandlerFromList(PeerHandler ph) {
-		peerHandlerList.remove(ph);
-		rpiToPeerHandler.remove(ph);
+		synchronized(peerHandlerList) {
+			peerHandlerList.remove(ph);
+			rpiToPeerHandler.remove(ph);
+		}
 	}
 	
 	public static synchronized RemotePeerInfo getRPI(PeerHandler ph) {
 		RemotePeerInfo foundRPI = null;
-		for(RemotePeerInfo rpi : peerList) {
-			if(rpi.peerAddress.equals(ph.socket.getInetAddress().getCanonicalHostName()) ||
-					rpi.peerAddress.equals(ph.socket.getInetAddress().toString())) {
-				foundRPI = rpi;
+		synchronized(peerList) {
+			for(RemotePeerInfo rpi : peerList) {
+				if(rpi.peerAddress.equals(ph.socket.getInetAddress().getCanonicalHostName()) ||
+						rpi.peerAddress.equals(ph.socket.getInetAddress().toString())) {
+					foundRPI = rpi;
+				}
 			}
 		}
 		return foundRPI;
