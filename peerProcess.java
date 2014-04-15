@@ -105,6 +105,7 @@ public class peerProcess {
 		preferredNeighborTimer.cancel();
 		optimisticUnchokeTimer.cancel();
 		Logger.closeLogger();
+		System.out.println("ALL DONE!!!");
 	}
 	
 	/**read and parse the file ./Common.cfg
@@ -147,7 +148,6 @@ public class peerProcess {
 		}
 		//always close the scanner
 		scanner.close();
-		System.out.println("ALL DONE!!!");
 	}
 	
 	public static void readPeerInfo() {
