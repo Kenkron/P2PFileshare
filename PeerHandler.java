@@ -58,7 +58,7 @@ public class PeerHandler {
 
 	public PeerHandler(Socket s) {
 		this.socket = s;
-		remoteSegments = new boolean[peerProcess.myCopy.segmentOwned.length];
+		remoteSegments = new boolean[peerProcess.myCopy.getSegmentOwnedLength()];
 		try {
 			oos = s.getOutputStream();
 			ih = new InputHandler(s);
@@ -127,7 +127,7 @@ public class PeerHandler {
 		//Run through all of their segments and see if we don't have one
 		for (int i = 0; i < remoteSegments.length; i++) {
 			//Check that we dont have this segment and they do
-			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+			if (remoteSegments[i] && !peerProcess.myCopy.getSegment(i))
 				interested = true;
 		}
 		return interested;
@@ -143,7 +143,7 @@ public class PeerHandler {
 		//Run through all of their segments and see if we don't have one
 		for (int i = 0; i < remoteSegments.length; i++) {
 			//Check that we dont have this segment and they do
-			if (remoteSegments[i] && !peerProcess.myCopy.segmentOwned[i])
+			if (remoteSegments[i] && !peerProcess.myCopy.getSegment(i))
 				interested = true;
 		}	
 		
@@ -255,7 +255,7 @@ public class PeerHandler {
 			for (int i = 0; i < remoteSegments.length; i++) {
 				//Check that we dont have this segment, they do, and it hasn't been requested yet
 				if (remoteSegments[i] && 
-					!peerProcess.myCopy.segmentOwned[i] &&
+					!peerProcess.myCopy.getSegment(i) &&
 					!peerProcess.currentlyRequestedPieces.contains(i)) {
 						weDontTheyDo.add(i);
 				}
@@ -297,7 +297,7 @@ public class PeerHandler {
 		try {
 			pieceBytes = peerProcess.myCopy.getPart(pieceIndex);
 		} catch (IOException e) {
-			peerProcess.myCopy.segmentOwned[pieceIndex]=false;
+			peerProcess.myCopy.setSegmentOwned(pieceIndex, false);
 			System.err.println("Tried to send a piece we don't have");
 			e.printStackTrace();
 			return;
@@ -322,32 +322,6 @@ public class PeerHandler {
 	    }
 		
 		Logger.debug(Logger.DEBUG_STANDARD, "Sent PIECE " + pieceIndex + " to " + otherPeerID);
-		
-		/*
-		byte[] sizeData=new byte[INT_LENGTH];
-		byte[] typeData=new byte[TYPE_LENGTH];
-		byte[] pieceData=null;
-		try {
-			 pieceData= peerProcess.myCopy.getPart(pieceIndex);
-		} catch (IOException e) {
-			peerProcess.myCopy.segmentOwned[pieceIndex]=false;
-			System.err.println("Tried to send a piece we don't have");
-			e.printStackTrace();
-			return;
-		}
-		ByteBuffer.wrap(sizeData).putInt(pieceData.length+typeData.length);
-		
-
-		try {
-			oos.write(sizeData);
-			oos.write(typeData);
-			oos.write(pieceData);
-			oos.flush();
-		} catch (IOException e) {
-			System.err.println("could not send piece "+pieceIndex);
-			e.printStackTrace();
-		}
-		*/
 	}
 
 	/**Start the InputHandler*/
