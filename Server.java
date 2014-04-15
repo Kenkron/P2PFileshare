@@ -45,6 +45,7 @@ public class Server implements Runnable {
 					otherPeerID = peerProcess.getRPI(ph).peerId;
 					Logger.connectedFrom(Integer.valueOf(otherPeerID));
 					Logger.debug(Logger.DEBUG_STANDARD,"Server: Connection From "+otherPeerID);
+					
 				} else {
 					Logger.debug(Logger.DEBUG_STANDARD,"Server: connection rejected");
 				}
@@ -53,5 +54,13 @@ public class Server implements Runnable {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void checkCompletion(Thread serverThread){
+		boolean done=true;
+		for (PeerHandler p:peerHandlerList)
+			done=done&&p.isRemoteSegmentsComplete();
+		if (done)
+			serverThread.interrupt();
 	}
 }

@@ -44,7 +44,7 @@ public class PeerHandler {
 		}
 		return retVal;
 	}
-	private boolean isRemoteSegmentsComplete() {
+	public boolean isRemoteSegmentsComplete() {
 		boolean missingPiece=false;
 		for(int i=0;i<remoteSegments.length;i++) {
 			if(!remoteSegments[i]) {
