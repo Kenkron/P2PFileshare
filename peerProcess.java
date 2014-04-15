@@ -102,7 +102,8 @@ public class peerProcess {
 		}
 		
 		serverThread.join();
-		
+		preferredNeighborTimer.cancel();
+		optimisticUnchokeTimer.cancel();
 		Logger.closeLogger();
 	}
 	
