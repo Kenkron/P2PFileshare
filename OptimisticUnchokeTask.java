@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class OptimisticUnchokeTask extends TimerTask {
 
-	private static Random randomizer=new Random((long)(Math.random()*Integer.MAX_VALUE));
+	private static Random randomizer=new Random(System.currentTimeMillis());
     
      /** This method is called by peerProcess according to a given
      * interval. This method will find 1 optimistic neighbor randomly
