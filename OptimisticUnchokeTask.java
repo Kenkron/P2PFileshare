@@ -28,16 +28,17 @@ public class OptimisticUnchokeTask extends TimerTask {
         //to choose from later
         ArrayList<RemotePeerInfo> possibleList = new ArrayList<RemotePeerInfo>();
         
-        //first check if we only have one peer
-        if (peerList.size() <= 1) {
-            //if so, just make everyone a preferred neighbor
-        	possibleList = new ArrayList<RemotePeerInfo>(peerList);
-            //now clear the list of "un-preferred" neighbors
-            peerList.clear();
-        }
-        
-        //otherwise, choose randomly for one
-        else {
+//        //first check if we only have one peer
+//        if (peerList.size() <= 1) {
+//            //if so, just make everyone a preferred neighbor
+//        	//possibleList = new ArrayList<RemotePeerInfo>(peerList);
+//        	possibleList = peerList;
+//            //now clear the list of "un-preferred" neighbors
+//            peerList.clear();
+//        }
+//        
+//        //otherwise, choose randomly for one
+//        else {
               //go through each peer to see how if it can be added to possible
               for (RemotePeerInfo rpi : peerProcess.peerList) {
                   PeerHandler peer = peerProcess.rpiToPeerHandler.get(rpi);
@@ -46,7 +47,7 @@ public class OptimisticUnchokeTask extends TimerTask {
                       possibleList.add(rpi);
                   }
               }
-        }
+//        }
         
         if (possibleList.size() < 1) {
         	peerProcess.currentOptimisticallyUnchokedNeighbor = null;
