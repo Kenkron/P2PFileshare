@@ -149,7 +149,7 @@ public class Logger {
 	}
 	
 	private static String downloadCompleteString() {
-		return getFormattedDate() + ": Peer " + peerID + " has downloaded the complete file";
+		return getFormattedDate() + ": Peer " + peerID + " has downloaded the complete file.\n";
 	}
 	public static void downloadComplete() {
 		logToFile(downloadCompleteString());
