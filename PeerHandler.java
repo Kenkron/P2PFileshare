@@ -244,7 +244,7 @@ public class PeerHandler {
 		//An oddly named array which contains indices of segments we don't
 		//have and they do && it hasn't been requested yet
 		ArrayList<Integer> weDontTheyDo = new ArrayList<Integer>();
-		Random randomizer=new Random((long)(Math.random()*Integer.MAX_VALUE));
+		Random randomizer=new Random(System.currentTimeMillis());
 		
 		//synchronize to prevent data race. ex:
 		//T1:empty, adds to selectable list; T2: empty, adds to selectable list
