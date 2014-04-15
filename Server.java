@@ -60,7 +60,14 @@ public class Server implements Runnable {
 		boolean done=true;
 		for (RemotePeerInfo rpi:peerList)
 			done=done&&rpi.hasFile();
-		if (done)
+		if (done){
 			serverThread.interrupt();
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
 	}
 }
