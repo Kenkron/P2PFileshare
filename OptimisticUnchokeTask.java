@@ -16,27 +16,21 @@ public class OptimisticUnchokeTask extends TimerTask {
 		synchronized (peerProcess.peerHandlerList) {
 
 			// The peerList below is initialized to all peers
-			ArrayList<RemotePeerInfo> peerList = new ArrayList<RemotePeerInfo>();
-
-			for (PeerHandler handle : peerProcess.peerHandlerList) {
-				peerList.add(peerProcess.getRPI(handle));
-			}
+			ArrayList<PeerHandler> peerList = new ArrayList<PeerHandler>(peerProcess.peerHandlerList);
 
 			if (peerList.isEmpty()) {
 				return;
 			}
 
 			// The empty preferred list below will contain the possible
-			// neighbors
-			// to choose from later
-			ArrayList<RemotePeerInfo> possibleList = new ArrayList<RemotePeerInfo>();
+			// neighbors to choose from later
+			ArrayList<PeerHandler> possibleList = new ArrayList<PeerHandler>();
 
 			// go through each peer to see how if it can be added to possible
-			for (RemotePeerInfo rpi : peerProcess.peerList) {
-				PeerHandler peer = peerProcess.rpiToPeerHandler.get(rpi);
+			for (PeerHandler peer : peerList) {
 				if (peer != null && peer.otherPeerIsInterested
 						&& peer.otherPeerIsChoked) {
-					possibleList.add(rpi);
+					possibleList.add(peer);
 				}
 			}
 
@@ -46,9 +40,8 @@ public class OptimisticUnchokeTask extends TimerTask {
 			}
 
 			int randomIndex = randomizer.nextInt(possibleList.size());
-			RemotePeerInfo choice = possibleList.get(randomIndex);
+			PeerHandler ph = possibleList.get(randomIndex);
 
-			PeerHandler ph = peerProcess.rpiToPeerHandler.get(choice);
 			peerProcess.currentOptimisticallyUnchokedNeighbor = ph;
 			ph.sendUnchoke();
 		}

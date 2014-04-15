@@ -17,9 +17,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
     	
     	synchronized (peerProcess.peerHandlerList){ 
 
-			// The peerList below is initialized to all peers, but after this
-			// method
-			// runs, it will contain "un-preferred" neighbors
+			// The peerList below is initialized to all peers
 			peerList = new ArrayList<PeerHandler>(peerProcess.peerHandlerList);
 
 			if (peerList.isEmpty()) {
@@ -27,8 +25,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 			}
 
 			// The empty preferred list below will contain the preferred
-			// neighbors
-			// after this method is executed.
+			// neighbors after this method is executed.
 			ArrayList<PeerHandler> preferredList = new ArrayList<PeerHandler>();
 
 			for (int i = 0; i < peerProcess.NumberOfPreferredNeighbors; i++) {
