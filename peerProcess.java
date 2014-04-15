@@ -147,6 +147,7 @@ public class peerProcess {
 		}
 		//always close the scanner
 		scanner.close();
+		System.out.println("ALL DONE!!!");
 	}
 	
 	public static void readPeerInfo() {
