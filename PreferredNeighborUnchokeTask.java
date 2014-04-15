@@ -35,7 +35,7 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 				PeerHandler best = null;
 				int bestRate = 0;
 				// go through each peer to see how it compares to current best
-				for (PeerHandler peer : peerProcess.peerHandlerList) {
+				for (PeerHandler peer : peerList) {
 					if (peer != null && peer.otherPeerIsInterested) {
 						// if it is better...
 						if (peer.getDataRcvd() >= bestRate) {
@@ -72,11 +72,10 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 
 			// Log this
 			if (preferredList.size() > 0) {
-				String preferredListString = peerProcess.getRPI(preferredList
-						.get(0)).peerId;
+				String preferredListString = String.valueOf(preferredList.get(0).otherPeerID);
 				for (int z = 1; z < preferredList.size(); z++)
 					preferredListString = preferredListString + ", "
-							+ peerProcess.getRPI(preferredList.get(z)).peerId;
+							+ String.valueOf(preferredList.get(z).otherPeerID);
 				Logger.debug(Logger.DEBUG_STANDARD, "Peer "
 						+ peerProcess.peerID + " has the preferred "
 						+ "neighbors " + preferredListString);
