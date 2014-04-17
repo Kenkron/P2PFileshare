@@ -91,16 +91,6 @@ public class peerProcess {
 		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
 		                                      0, OptimisticUnchokingInterval);
 
-		//TODO: create a total count of connections made
-		//update within addPeerHandlerToList()
-		//wait() on a lock, notify on the lock when connectionsMade == peerList.size()
-		//wait() on a second lock, notify when to connections dropped == peerList.size()
-		for(PeerHandler ph : peerHandlerList) {
-			//TODO: we may have to make PeerHandler a Thread, then join() on them
-			//TODO: maybe we shouldn't remove the PeerHandler from the list when it finishes, but instead after it joins
-			//ph.join();
-		}
-		
 		serverThread.join();
 		preferredNeighborTimer.cancel();
 		optimisticUnchokeTimer.cancel();
