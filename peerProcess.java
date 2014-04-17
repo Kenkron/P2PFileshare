@@ -84,16 +84,16 @@ public class peerProcess {
 		startServerConnectToPeers();
 		
 	    //create the Timer classes for checking for better neighbor
-		Timer preferredNeighborTimer = new Timer();
-		Timer optimisticUnchokeTimer = new Timer();	
+		Timer preferredNeighborTimer = new Timer(true);
+		Timer optimisticUnchokeTimer = new Timer(true);	
 		preferredNeighborTimer.scheduleAtFixedRate(new PreferredNeighborUnchokeTask()
 		                                      , 0, UnchokingInterval);
 		optimisticUnchokeTimer.scheduleAtFixedRate(new OptimisticUnchokeTask(),
 		                                      0, OptimisticUnchokingInterval);
 
 		serverThread.join();
-		preferredNeighborTimer.cancel();
-		optimisticUnchokeTimer.cancel();
+		//preferredNeighborTimer.cancel();
+		//optimisticUnchokeTimer.cancel();
 		Logger.closeLogger();
 		System.out.println("ALL DONE!!!");
 	}
