@@ -44,7 +44,8 @@ public class PeerHandler {
 	private String getBitfieldString() {
 		String retVal = "";
 		for (byte b : getBitfield()) {
-			retVal += Integer.toBinaryString(b) + " ";
+			//Convert to a binary integer, then get the last byte (which correllates to bianry form of b)
+			retVal += Integer.toBinaryString(b).substring(Integer.SIZE - Byte.SIZE) + " ";
 		}
 		return retVal;
 	}
