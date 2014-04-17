@@ -54,8 +54,10 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 				peerProcess.peerHandlerList.get(x).clearDataCounter();
 
 			// unchoke preferred neighbors
-			for (int i = 0; i < preferredList.size(); i++)
+			for (int i = 0; i < preferredList.size(); i++) {
 				preferredList.get(i).sendUnchoke();
+				preferredList.get(i).waitingForRequestTimer.schedule(preferredList.get(i).waitTimeoutTask, (long) peerProcess.UnchokingInterval/2);//TODO: review
+			}
 
 			// choke un-preferred neighbors, except optimistically-unchoked
 			// neighbor

@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Timer;
 
 public class PeerHandler {
 	private static final String HELLO = "HELLO";
@@ -32,6 +33,9 @@ public class PeerHandler {
 	private boolean waitingForRequestFromOtherPeer = false;
 	/** The amount of data received from this peer since the last choke cycle */
 	private int dataRcvd = 0;
+	
+	public UnresponsiveUnchokeTask waitTimeoutTask;//TODO: review
+	public Timer waitingForRequestTimer = new Timer();//TODO: review
 
 	public boolean weAreChoked = true;
 
@@ -72,6 +76,7 @@ public class PeerHandler {
 			e.printStackTrace();
 		}
 		otherPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
+		waitTimeoutTask = new UnresponsiveUnchokeTask(otherPeerID);//TODO: review
 	}
 
 	public void sendHandshake() {
@@ -273,6 +278,13 @@ public class PeerHandler {
 	 * payload (pieceIndex)
 	 */
 	public void sendRequest() {
+		//protocol robustness: a secondary preventative situation for not receiving a piece that we've requested
+		if(requestedPiece > -1) {
+			synchronized(peerProcess.currentlyRequestedPieces) {
+				peerProcess.currentlyRequestedPieces.remove(new Integer(requestedPiece));
+			}
+		}
+		
 		// An oddly named array which contains indices of segments we don't
 		// have and they do && it hasn't been requested yet
 		ArrayList<Integer> weDontTheyDo = new ArrayList<Integer>();
@@ -470,6 +482,7 @@ public class PeerHandler {
 		}
 
 		public void rcvPiece(byte[] payload) throws IOException {
+			waitingForRequestTimer.cancel();//TODO: review
 			byte[] pieceID = new byte[INT_LENGTH];
 			byte[] piece = new byte[payload.length - pieceID.length];
 			System.arraycopy(payload, 0, pieceID, 0, pieceID.length);
