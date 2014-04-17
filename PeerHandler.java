@@ -44,7 +44,7 @@ public class PeerHandler {
 	private String getBitfieldString() {
 		String retVal = "";
 		for (byte b : getBitfield()) {
-			//Convert to a binary integer, then get the last byte (which correllates to bianry form of b)
+			//Convert to binary int, then get last byte (correllating to binary form of b)
 			retVal += Integer.toBinaryString(b).substring(Integer.SIZE - Byte.SIZE) + " ";
 		}
 		return retVal;
@@ -82,8 +82,7 @@ public class PeerHandler {
 		System.arraycopy(HELLO.getBytes(), 0, outputBytes, 0,
 				HELLO.getBytes().length);
 		// middle bytes already default to 0
-		System.arraycopy(peerIDBytes, 0, outputBytes, HANDSHAKE_LENGTH
-				- INT_LENGTH, INT_LENGTH);
+		System.arraycopy(peerIDBytes, 0, outputBytes, HANDSHAKE_LENGTH - INT_LENGTH, INT_LENGTH);
 		try {
 			oos.write(outputBytes);
 		} catch (IOException e) {
@@ -96,10 +95,8 @@ public class PeerHandler {
 
 	public void sendChoke() {
 		byte[] chokeBytes = new byte[PAYLOAD_OFFSET];
-		chokeBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message length to
-														// 1
-		chokeBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.CHOKE
-				.ordinal();
+		chokeBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message length to 1
+		chokeBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.CHOKE.ordinal();
 		try {
 			oos.write(chokeBytes);
 		} catch (IOException e) {
@@ -119,10 +116,8 @@ public class PeerHandler {
 		if (doUnchoke) {
 			otherPeerIsChoked = false;
 			byte[] unchokeBytes = new byte[PAYLOAD_OFFSET];
-			unchokeBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message
-																// length to 1
-			unchokeBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.UNCHOKE
-					.ordinal();
+			unchokeBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message length to 1
+			unchokeBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.UNCHOKE.ordinal();
 			try {
 				oos.write(unchokeBytes);
 			} catch (IOException e) {
@@ -175,10 +170,8 @@ public class PeerHandler {
 	 */
 	public void sendInterested() {
 		byte[] interestedBytes = new byte[PAYLOAD_OFFSET];
-		interestedBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message
-																// length to 1
-		interestedBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.INTERESTED
-				.ordinal();
+		interestedBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message length to 1
+		interestedBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.INTERESTED.ordinal();
 		try {
 			oos.write(interestedBytes);
 		} catch (IOException e) {
@@ -285,10 +278,7 @@ public class PeerHandler {
 		ArrayList<Integer> weDontTheyDo = new ArrayList<Integer>();
 		Random randomizer = new Random(System.currentTimeMillis());
 
-		// synchronize to prevent data race. ex:
-		// T1:empty, adds to selectable list; T2: empty, adds to selectable list
-		// T2:randomly chosen, added to list; T2: randomly chosen, added to list
-		// (again)
+		// synchronize to prevent data race
 		int choice;
 		synchronized (peerProcess.peerHandlerList) {
 
@@ -327,8 +317,7 @@ public class PeerHandler {
 				+ payloadBytes.length];// 4 + 1 + 4
 
 		System.arraycopy(msgLengthBytes, 0, outputBytes, 0, INT_LENGTH);
-		outputBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.REQUEST
-				.ordinal();
+		outputBytes[PAYLOAD_OFFSET - TYPE_LENGTH] = (byte) Message.MessageType.REQUEST.ordinal();
 		System.arraycopy(payloadBytes, 0, outputBytes, PAYLOAD_OFFSET,
 				payloadBytes.length);
 		try {
