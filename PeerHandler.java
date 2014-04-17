@@ -35,7 +35,7 @@ public class PeerHandler {
 	private int dataRcvd = 0;
 	
 	public UnresponsiveUnchokeTask waitTimeoutTask;//TODO: review
-	public Timer waitingForRequestTimer = new Timer();//TODO: review
+	public Timer waitingForRequestTimer = new Timer(true);//TODO: review
 
 	public boolean weAreChoked = true;
 
