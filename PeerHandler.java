@@ -425,6 +425,11 @@ public class PeerHandler {
 		public void rcvChoke() {
 			Logger.chokedBy(otherPeerID);
 			weAreChoked = true;
+			synchronized(peerProcess.currentlyRequestedPieces) {
+				//If we're choked, we should clear outstanding requests
+				peerProcess.currentlyRequestedPieces.remove(new Integer(requestedPiece));
+				requestedPiece = -1;
+			}
 		}
 
 		public void rcvUnchoke() {
