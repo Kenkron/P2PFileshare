@@ -581,12 +581,12 @@ public class PeerHandler {
 	}
 
 	/** Clears the data received count */
-	public void clearDataCounter() {
+	public synchronized void clearDataCounter() {
 		dataRcvd = 0;
 	}
 
 	/** Fetches the data received count */
-	public int getDataRcvd() {
+	public synchronized int getDataRcvd() {
 		return dataRcvd;
 	}
 

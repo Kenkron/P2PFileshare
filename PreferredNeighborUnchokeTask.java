@@ -62,8 +62,10 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 			for (int y = 0; y < peerList.size(); y++) {
 				PeerHandler ph = peerList.get(y);
 				
-				if (ph != peerProcess.currentOptimisticallyUnchokedNeighbor) {
-					ph.sendChoke();
+				synchronized(ph.otherPeerIsChoked){
+					if (ph != peerProcess.currentOptimisticallyUnchokedNeighbor && !ph.otherPeerIsChoked) {
+						ph.sendChoke();
+					}
 				}
 			}
 
