@@ -28,9 +28,10 @@ public class OptimisticUnchokeTask extends TimerTask {
 
 			// go through each peer to see how if it can be added to possible
 			for (PeerHandler peer : peerList) {
-				if (peer != null && peer.otherPeerIsInterested
-						&& peer.otherPeerIsChoked) {
-					possibleList.add(peer);
+				synchronized(peer.otherPeerIsChoked) {
+					if (peer != null && peer.otherPeerIsInterested && peer.otherPeerIsChoked) {
+						possibleList.add(peer);
+					}
 				}
 			}
 
