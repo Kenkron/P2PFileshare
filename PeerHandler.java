@@ -304,8 +304,10 @@ public class PeerHandler {
 
 				// If the list is empty (no segments they have that we don't),
 				// just stop
-				if (weDontTheyDo.size() == 0)
-					return;
+				if (weDontTheyDo.size() == 0){
+					Logger.debug(Logger.DEBUG_LOGFILE, "No Request Sent: they have no files we want.");
+					return;					
+				}
 
 				// Choose randomly from the segments we own and they do
 				int randomIndex = randomizer.nextInt(weDontTheyDo.size());
