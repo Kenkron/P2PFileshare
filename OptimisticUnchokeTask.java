@@ -43,6 +43,7 @@ public class OptimisticUnchokeTask extends TimerTask {
 			PeerHandler ph = possibleList.get(randomIndex);
 
 			peerProcess.currentOptimisticallyUnchokedNeighbor = ph;
+			Logger.changedOptimisticallyUnchokedNeighbor(ph.otherPeerID);
 			ph.sendUnchoke();
 		}
 	}
