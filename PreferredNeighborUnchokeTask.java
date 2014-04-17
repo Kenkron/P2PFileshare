@@ -69,13 +69,16 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 
 			// Log this
 			if (preferredList.size() > 0) {
+				ArrayList<Integer> neighborIDs = new ArrayList<Integer>();
 				String preferredListString = String.valueOf(preferredList.get(0).otherPeerID);
-				for (int z = 1; z < preferredList.size(); z++)
+				neighborIDs.add(preferredList.get(0).otherPeerID);
+				
+				for (int z = 1; z < preferredList.size(); z++) {
 					preferredListString = preferredListString + ", "
 							+ String.valueOf(preferredList.get(z).otherPeerID);
-				Logger.debug(Logger.DEBUG_STANDARD, "Peer "
-						+ peerProcess.peerID + " has the preferred "
-						+ "neighbors " + preferredListString);
+					neighborIDs.add(preferredList.get(0).otherPeerID);
+				}
+				Logger.changedPreferredNeighbors(neighborIDs);
 			}
 
     	}
