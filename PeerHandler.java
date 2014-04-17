@@ -494,7 +494,10 @@ public class PeerHandler {
 				// INTERESTED/NOT_INTERESTED
 				for (PeerHandler ph : peerProcess.peerHandlerList) {
 					ph.sendHave(pieceIndex);
-					ph.decideInterest();
+					if(!ph.isInterested()) {
+						//ph.decideInterest();
+						ph.sendNotInterested();
+					}
 				}
 			}
 
