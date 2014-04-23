@@ -574,13 +574,7 @@ public class PeerHandler {
 			} catch (IOException e) {
 				/*ignored*/
 			} finally {
-				System.out.print("Peer " + otherPeerID + " closed ");
-				if (!isRemoteSegmentsComplete()
-						|| !peerProcess.myCopy.isComplete()) {
-					System.out.println("unexpectedly");
-				} else {
-					System.out.println("cleanly");
-				}
+				System.out.println("Connection to peer " + otherPeerID + " closed");
 				PeerHandler.this.close();
 			}
 		}
