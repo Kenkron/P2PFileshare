@@ -484,6 +484,7 @@ public class PeerHandler {
 
 		public void rcvPiece(byte[] payload) throws IOException {
 			waitingForRequestTimer.cancel();//TODO: review
+			waitingForRequestTimer = new Timer(true);
 			byte[] pieceID = new byte[INT_LENGTH];
 			byte[] piece = new byte[payload.length - pieceID.length];
 			System.arraycopy(payload, 0, pieceID, 0, pieceID.length);
