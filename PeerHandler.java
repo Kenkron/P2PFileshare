@@ -418,7 +418,9 @@ public class PeerHandler {
 				System.arraycopy(input, input.length - INT_LENGTH, payload, 0,
 						INT_LENGTH);
 				int receivedPeerID = ByteBuffer.wrap(payload).getInt();
+				
 				otherPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
+				System.out.println("Expected: " + otherPeerID + "\tReceived: " + receivedPeerID);
 				if (receivedPeerID == otherPeerID) {
 					approved = true;
 					if (!sentHandshake) {
