@@ -209,6 +209,7 @@ public class peerProcess {
 		synchronized(peerHandlerList) {
 			for(PeerHandler currentPeer : peerHandlerList) {
 				Socket currentSocket = currentPeer.socket;
+				System.out.println(ph.socket.getInetAddress().toString() + " : " + currentSocket.getInetAddress().toString());
 				if(ph.socket.getInetAddress().toString().equals(currentSocket.getInetAddress().toString())) {
 					exists = true;
 				}
