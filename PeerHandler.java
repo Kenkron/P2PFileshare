@@ -34,8 +34,8 @@ public class PeerHandler {
 	/** The amount of data received from this peer since the last choke cycle */
 	private int dataRcvd = 0;
 	
-	public UnresponsiveUnchokeTask waitTimeoutTask;//TODO: review
-	public Timer waitingForRequestTimer = new Timer(true);//TODO: review
+	private UnresponsiveUnchokeTask waitTimeoutTask;//TODO: review
+	private Timer waitingForRequestTimer = new Timer(true);//TODO: review
 
 	public boolean weAreChoked = true;
 
@@ -119,6 +119,7 @@ public class PeerHandler {
 				doUnchoke = true;
 		}
 		if (doUnchoke) {
+			waitingForRequestTimer.schedule(waitTimeoutTask, (long) peerProcess.UnchokingInterval/2);//TODO: review
 			otherPeerIsChoked = false;
 			byte[] unchokeBytes = new byte[PAYLOAD_OFFSET];
 			unchokeBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message length to 1

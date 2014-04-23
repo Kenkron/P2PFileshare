@@ -1,3 +1,4 @@
+import java.util.Collections;
 import java.util.TimerTask;
 import java.util.ArrayList;
 
@@ -27,6 +28,8 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 			// The empty preferred list below will contain the preferred
 			// neighbors after this method is executed.
 			ArrayList<PeerHandler> preferredList = new ArrayList<PeerHandler>();
+			//ensures that if this peer has the file, then the selected preferred peers will be random
+			Collections.shuffle(peerList);
 
 			for (int i = 0; i < peerProcess.NumberOfPreferredNeighbors; i++) {
 				PeerHandler best = null;
@@ -34,8 +37,11 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 				// go through each peer to see how it compares to current best
 				for (PeerHandler peer : peerList) {
 					if (peer != null && peer.otherPeerIsInterested) {
-						// if it is better...
-						if (peer.getDataRcvd() >= bestRate) {
+						if(peerProcess.myCopy.isComplete()) {//if hasCompleteFile: selects randomly (shuffled above)
+							best = peer;
+							break;
+						}
+						else if (peer.getDataRcvd() >= bestRate) {// if it is better...
 							best = peer;
 							bestRate = peer.getDataRcvd();
 						}
@@ -56,7 +62,6 @@ public class PreferredNeighborUnchokeTask extends TimerTask {
 			// unchoke preferred neighbors
 			for (int i = 0; i < preferredList.size(); i++) {
 				preferredList.get(i).sendUnchoke();
-				preferredList.get(i).waitingForRequestTimer.schedule(preferredList.get(i).waitTimeoutTask, (long) peerProcess.UnchokingInterval/2);//TODO: review
 			}
 
 			// choke un-preferred neighbors, except optimistically-unchoked

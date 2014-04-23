@@ -12,14 +12,12 @@ public class UnresponsiveUnchokeTask extends TimerTask {
 	}
 
 	/**
-	 * This method is called by peerProcess according to a given interval. This
-	 * method will find 1 optimistic neighbor randomly from a list of all
-	 * unchoked, but interested neighbors
+	 * This method is called by when a peer does not REQUEST within a given time period.
+	 * It selects a new peer to unchoke from the peerHandlerList which is interested and 
+	 * not already unchoked.
 	 */
 	public void run() {
-
 		synchronized (peerProcess.peerHandlerList) {
-
 			// The peerList below is initialized to all peers
 			ArrayList<PeerHandler> peerList = new ArrayList<PeerHandler>(peerProcess.peerHandlerList);
 
@@ -41,7 +39,6 @@ public class UnresponsiveUnchokeTask extends TimerTask {
 			}
 
 			if (possibleList.size() < 1) {
-				peerProcess.currentOptimisticallyUnchokedNeighbor = null;
 				return;
 			}
 
