@@ -51,7 +51,7 @@ public class PeerHandler {
 			//Convert to binary int, then get last byte (correllating to binary form of b)
 			String temp = Integer.toBinaryString(b);//.substring(Integer.SIZE - Byte.SIZE) + " ";
 
-			while(temp.length<Integer.SIZE)
+			while(temp.length() <Integer.SIZE)
 			    temp = "0" + temp;
 			retVal += temp.substring(Integer.SIZE - Byte.SIZE);
 		}
