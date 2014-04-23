@@ -26,7 +26,7 @@ public class PeerHandler {
 	private OutputStream oos = null;
 	private InputHandler ih = null;
 
-	public final int otherPeerID;
+	public int otherPeerID;
 	private boolean sentHandshake = false;
 	public boolean otherPeerIsInterested = false;
 	public Boolean otherPeerIsChoked = true;
@@ -79,7 +79,6 @@ public class PeerHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		otherPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
 		waitTimeoutTask = new UnresponsiveUnchokeTask(otherPeerID);//TODO: review
 	}
 
@@ -418,6 +417,7 @@ public class PeerHandler {
 				System.arraycopy(input, input.length - INT_LENGTH, payload, 0,
 						INT_LENGTH);
 				int receivedPeerID = ByteBuffer.wrap(payload).getInt();
+				otherPeerID = Integer.valueOf(peerProcess.getRPI(PeerHandler.this).peerId);
 				if (receivedPeerID == otherPeerID) {
 					approved = true;
 					if (!sentHandshake) {
