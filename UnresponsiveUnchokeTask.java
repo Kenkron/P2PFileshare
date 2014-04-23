@@ -5,11 +5,6 @@ import java.util.ArrayList;
 public class UnresponsiveUnchokeTask extends TimerTask {
 
 	private static Random randomizer = new Random(System.currentTimeMillis());
-	private int peerID;
-	public UnresponsiveUnchokeTask(int peerID) {
-		super();
-		this.peerID = peerID;
-	}
 
 	/**
 	 * This method is called by when a peer does not REQUEST within a given time period.
@@ -45,7 +40,6 @@ public class UnresponsiveUnchokeTask extends TimerTask {
 			int randomIndex = randomizer.nextInt(possibleList.size());
 			PeerHandler ph = possibleList.get(randomIndex);
 
-			Logger.debug(Logger.DEBUG_LOGFILE, "Unresponsive peer " + peerID + ", unchoking peer " + ph.otherPeerID);
 			ph.sendUnchoke();
 		}
 	}

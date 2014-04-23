@@ -122,7 +122,6 @@ public class FileData{
 		return val;
 	}
 	
-	//TODO: Remove? since it's not necessary?
 	/**Updates the segmentOwned and bitfields according to any pre-existing partial files*/
 	public void findExistingPartialFiles() {
 		for(int part = 0;part<getSegmentOwnedLength();part++) {

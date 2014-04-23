@@ -34,8 +34,8 @@ public class PeerHandler {
 	/** The amount of data received from this peer since the last choke cycle */
 	private int dataRcvd = 0;
 	
-	private UnresponsiveUnchokeTask waitTimeoutTask;//TODO: review
-	private Timer waitingForRequestTimer = new Timer(true);//TODO: review
+	private UnresponsiveUnchokeTask waitTimeoutTask;
+	private Timer waitingForRequestTimer = new Timer(true);
 
 	public boolean weAreChoked = true;
 
@@ -79,7 +79,7 @@ public class PeerHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		waitTimeoutTask = new UnresponsiveUnchokeTask(otherPeerID);//TODO: review
+		waitTimeoutTask = new UnresponsiveUnchokeTask();
 	}
 
 	public void sendHandshake() {
@@ -122,7 +122,7 @@ public class PeerHandler {
 				doUnchoke = true;
 		}
 		if (doUnchoke) {
-			waitingForRequestTimer.schedule(waitTimeoutTask, (long) peerProcess.UnchokingInterval/2);//TODO: review
+			waitingForRequestTimer.schedule(waitTimeoutTask, (long) peerProcess.UnchokingInterval/2);
 			otherPeerIsChoked = false;
 			byte[] unchokeBytes = new byte[PAYLOAD_OFFSET];
 			unchokeBytes[INT_LENGTH - 1] = (byte) TYPE_LENGTH;// set message length to 1
@@ -490,7 +490,7 @@ public class PeerHandler {
 		}
 
 		public void rcvPiece(byte[] payload) throws IOException {
-			waitingForRequestTimer.cancel();//TODO: review
+			waitingForRequestTimer.cancel();
 			waitingForRequestTimer = new Timer(true);
 			byte[] pieceID = new byte[INT_LENGTH];
 			byte[] piece = new byte[payload.length - pieceID.length];
@@ -536,7 +536,8 @@ public class PeerHandler {
 				} else {
 					Logger.debug(Logger.DEBUG_STANDARD,
 							"Handshake NOT Approved");
-				    System.exit(1);
+				    //System.exit(1);
+					throw new RuntimeException("Not an handshake not approved.");
 				}
 
 				int next = 0;
