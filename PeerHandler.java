@@ -397,6 +397,7 @@ public class PeerHandler {
 		private InputStream ois = null;
 
 		public InputHandler(Socket s) {
+			setDaemon(true);
 			try {
 				ois = s.getInputStream();
 			} catch (IOException e) {
