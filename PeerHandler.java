@@ -411,7 +411,7 @@ public class PeerHandler {
 			boolean approved = false;
 			// listen for handshake:
 			int lengthRcvd = ois.read(input, 0, HANDSHAKE_LENGTH);
-			if(lengthRcvd < HANDSHAKE_LENGTH) throw new RuntimeException("Received less than we should of");
+			//if(lengthRcvd < HANDSHAKE_LENGTH) throw new RuntimeException("Received less than we should of");
 			while(lengthRcvd < HANDSHAKE_LENGTH) {
 				lengthRcvd += ois.read(input, lengthRcvd, HANDSHAKE_LENGTH-lengthRcvd);
 			}
